@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Aura</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!--Facebook Application-->
+    <string name="facebook_app_id">160586947836430</string>
+    <string name="fb_login_protocol_scheme">fb160586947836430</string>
+</resources>
