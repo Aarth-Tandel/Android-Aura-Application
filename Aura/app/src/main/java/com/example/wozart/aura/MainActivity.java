@@ -1,10 +1,8 @@
 package com.example.wozart.aura;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -22,22 +20,17 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
-
-import org.json.JSONObject;
-
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobileconnectors.pinpoint.PinpointConfiguration;
+import com.amazonaws.mobileconnectors.pinpoint.PinpointManager;
+import com.example.wozart.aura.noSql.SqlOperationUserTable;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private NavigationView NavigationView;
     private ImageView userProfilePicture;
+    public static PinpointManager pinpointManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +59,25 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         updateUSerInfo();
+        awsAnalytics();
+        SqlOperationUserTable test = new SqlOperationUserTable();
+        test.getDevices("96500E");
+    }
+
+    public void awsAnalytics() {
+        PinpointConfiguration pinpointConfig = new PinpointConfiguration(
+                getApplicationContext(),
+                AWSMobileClient.getInstance().getCredentialsProvider(),
+                AWSMobileClient.getInstance().getConfiguration());
+
+        pinpointManager = new PinpointManager(pinpointConfig);
+
+        // Start a session with Pinpoint
+        pinpointManager.getSessionClient().startSession();
+
+        // Stop the session and submit the default app started event
+        pinpointManager.getSessionClient().stopSession();
+        pinpointManager.getAnalyticsClient().submitEvents();
     }
 
     private void updateUSerInfo(){
