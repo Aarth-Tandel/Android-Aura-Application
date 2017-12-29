@@ -6,6 +6,8 @@
 
     <string name="action_settings">Settings</string>
 
+    <string name="action_add_home">Add home</string>
+
     <!--Facebook Application-->
     <string name="facebook_app_id">160586947836430</string>
     <string name="fb_login_protocol_scheme">fb160586947836430</string>

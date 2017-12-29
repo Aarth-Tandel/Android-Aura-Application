@@ -1,4 +1,4 @@
-package com.amazonaws.models.nosql;
+package com.example.wozart.amazonaws.models.nosql;
 
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBAttribute;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBHashKey;

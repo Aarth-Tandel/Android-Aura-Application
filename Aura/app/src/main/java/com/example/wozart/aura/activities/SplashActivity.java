@@ -1,4 +1,4 @@
-package com.example.wozart.aura;
+package com.example.wozart.aura.activities;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,6 +9,9 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
+import com.example.wozart.aura.MainActivity;
+import com.example.wozart.aura.R;
+import com.example.wozart.aura.network.AwsPubSub;
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
 
@@ -29,6 +32,10 @@ public class SplashActivity extends AppCompatActivity {
         window.setStatusBarColor(Color.BLACK);
 
         AWSMobileClient.getInstance().initialize(this).execute();
+
+        if(isLoggedIn()){
+            startService(new Intent(this, AwsPubSub.class));
+        }
 
         new Handler().postDelayed(new Runnable() {
             @Override

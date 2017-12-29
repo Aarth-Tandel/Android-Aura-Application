@@ -1,19 +1,18 @@
-package com.example.wozart.aura;
+package com.example.wozart.aura.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
 
+import com.example.wozart.aura.MainActivity;
+import com.example.wozart.aura.R;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -21,12 +20,10 @@ import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.facebook.Profile;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -51,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Log.d("Facebook", "Result 1 : " + loginResult );
+                Log.d("Facebook", "Result 1 : " + loginResult);
             }
 
             @Override
@@ -103,10 +100,12 @@ public class LoginActivity extends AppCompatActivity {
                                 final String email = response.getJSONObject().getString("email");
                                 final String firstName = response.getJSONObject().getString("first_name");
                                 final String lastName = response.getJSONObject().getString("last_name");
+                                final String id = response.getJSONObject().getString("id");
 
                                 SharedPreferences.Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).edit();
                                 prefEditor.putString("USERNAME", firstName + " " + lastName);
                                 prefEditor.putString("EMAIL", email);
+                                prefEditor.putString("ID", "us-east-1:" + id);
                                 prefEditor.apply();
 
                                 if (data.has("picture")) {
@@ -127,7 +126,7 @@ public class LoginActivity extends AppCompatActivity {
             Bitmap profilePic = null;
             try {
                 URL url = new URL(urls[0]);
-                HttpURLConnection connection =(HttpURLConnection)url.openConnection();
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
                 connection.connect();
                 InputStream input = connection.getInputStream();
@@ -141,7 +140,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(final Bitmap profilePic) {
             super.onPostExecute(profilePic);
-            if(profilePic != null) {
+            if (profilePic != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 profilePic.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] b = baos.toByteArray();

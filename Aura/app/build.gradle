@@ -28,6 +28,11 @@ dependencies {
     compile 'com.amazonaws:aws-android-sdk-pinpoint:2.6.+'
     compile 'com.android.support:multidex:1.0.+'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.+'
+    compile 'com.amazonaws:aws-android-sdk-iot:2.2.+'
+    compile 'com.amazonaws:aws-android-sdk-core:2.6.0'
+
+    //Floating Action Button
+    compile 'com.github.clans:fab:1.6.4'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
