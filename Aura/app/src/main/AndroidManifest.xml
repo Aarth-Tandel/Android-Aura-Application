@@ -3,8 +3,9 @@
     package="com.example.wozart.aura">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -14,17 +15,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!--Services-->
+        <!-- Services -->
         <service android:name=".network.AwsPubSub" />
+        <service android:name=".network.TcpServer" />
 
-        <!--Main Activity-->
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
-        <!--Splash Activity-->
+        <!-- Splash Activity -->
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -35,14 +36,12 @@
             </intent-filter>
         </activity>
 
-        <!--Login Activity-->
+        <!-- Login Activity -->
         <activity
             android:name=".activities.LoginActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
-        </activity>
-
-        <!--Facebook Meta Data-->
+        <!-- Facebook Meta Data -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -63,8 +62,8 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-
-
+        <activity android:name=".activities.rooms.RoomActivity" />
+        <activity android:name=".activities.customization.CustomizationActivity"></activity>
     </application>
 
 </manifest>

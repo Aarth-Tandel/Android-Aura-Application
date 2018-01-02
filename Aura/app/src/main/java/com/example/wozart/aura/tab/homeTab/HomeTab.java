@@ -33,7 +33,7 @@ import java.util.List;
 
 public class HomeTab extends Fragment {
     private RecyclerView recyclerView;
-    //private RoomAdapter adapter;
+    private RoomAdapter adapter;
     private List<Rooms> roomsList;
 
     private DeviceDbOperation db = new DeviceDbOperation();
@@ -48,13 +48,13 @@ public class HomeTab extends Fragment {
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
 
         roomsList = new ArrayList<>();
-        //adapter = new RoomAdapter(getActivity(), roomsList);
+        adapter = new RoomAdapter(getActivity(), roomsList);
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 1);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.addItemDecoration(new HomeTab.GridSpacingItemDecoration(2, dpToPx(10), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        //recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -98,7 +98,7 @@ public class HomeTab extends Fragment {
             roomsList.add(a);
         }
 
-        //adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
     }
 
     private BroadcastReceiver mRefresh = new BroadcastReceiver() {

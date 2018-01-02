@@ -61,7 +61,7 @@ public class FavouriteTab extends Fragment {
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(
                 mRefresh, new IntentFilter("refreshFavTab"));
 
-        ArrayList<Favourites> favouriteLoads = favouriteDb.getFavouriteDevice(mFavouriteDb, MainActivity.SelectedHome);
+        ArrayList<Favourites> favouriteLoads = favouriteDb.getFavouriteDevice(mFavouriteDb, MainActivity.SELECTED_HOME);
         prepareRooms(favouriteLoads);
         return rootView;
     }

@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.example.wozart.aura.MainActivity;
 import com.example.wozart.aura.R;
+import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;

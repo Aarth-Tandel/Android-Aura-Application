@@ -1,4 +1,4 @@
-package com.example.wozart.aura.activities.Customization;
+package com.example.wozart.aura.activities.customization;
 
 /**
  * Created by wozart on 29/12/17.

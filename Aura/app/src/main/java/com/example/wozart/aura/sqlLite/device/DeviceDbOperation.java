@@ -5,8 +5,10 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.amazonaws.models.nosql.UserTableDO;
-import com.example.wozart.aura.activities.Customization.CustomizationDevices;
+import com.example.wozart.aura.activities.customization.CustomizationDevices;
+import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -243,19 +245,20 @@ public class DeviceDbOperation {
         }
     }
 
-    public void ThingFromAws(SQLiteDatabase db, UserTableDO user) {
-        for (String x : user.getDevices()) {
+    public void devicesFromAws(SQLiteDatabase db, ArrayList<DevicesTableDO> devices) {
+
+        if(devices == null) return;
+
+        for (DevicesTableDO x : devices) {
             boolean isThingAlreadyPresent;
-            List<String> compositeDataFromAws;
-            compositeDataFromAws = Arrays.asList(x.split(","));
-            isThingAlreadyPresent = checkDevice(db, compositeDataFromAws.get(1));
+            isThingAlreadyPresent = checkDevice(db, x.getDeviceId());
             if (!isThingAlreadyPresent) {
                 return;
             } else {
                 ContentValues value = new ContentValues();
                 value.put(ROOM_NAME, "Hall");
-                value.put(THING_NAME, compositeDataFromAws.get(0));
-                value.put(DEVICE_NAME, compositeDataFromAws.get(1));
+                value.put(THING_NAME, x.getThing());
+                value.put(DEVICE_NAME, x.getDeviceId());
                 value.put(HOME_NAME, "Home");
 
                 try {
@@ -267,7 +270,6 @@ public class DeviceDbOperation {
                     //Too bad :(
                 } finally {
                     db.endTransaction();
-
                 }
             }
         }

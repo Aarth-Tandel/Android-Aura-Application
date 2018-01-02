@@ -24,7 +24,7 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
 
     //AWS
-    compile ('com.amazonaws:aws-android-sdk-mobile-client:2.6.7@aar') { transitive = true; }
+    compile('com.amazonaws:aws-android-sdk-mobile-client:2.6.7@aar') { transitive = true; }
     compile 'com.amazonaws:aws-android-sdk-pinpoint:2.6.+'
     compile 'com.android.support:multidex:1.0.+'
     compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.+'

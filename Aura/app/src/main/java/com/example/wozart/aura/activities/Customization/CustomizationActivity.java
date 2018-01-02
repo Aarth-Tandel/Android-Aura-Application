@@ -1,8 +1,15 @@
-package com.example.wozart.aura.activities.Customization;
+package com.example.wozart.aura.activities.customization;
 
-/**
- * Created by wozart on 29/12/17.
- */
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 
-public class CustomizationActivity {
+import com.example.wozart.aura.R;
+
+public class CustomizationActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_customization);
+    }
 }

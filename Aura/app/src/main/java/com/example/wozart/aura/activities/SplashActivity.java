@@ -9,15 +9,19 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobileconnectors.pinpoint.PinpointConfiguration;
+import com.amazonaws.mobileconnectors.pinpoint.PinpointManager;
 import com.example.wozart.aura.MainActivity;
 import com.example.wozart.aura.R;
 import com.example.wozart.aura.network.AwsPubSub;
+import com.example.wozart.aura.network.TcpServer;
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
 
 public class SplashActivity extends AppCompatActivity {
 
     private final int SPLASH_DISPLAY_LENGTH = 3000;
+    public static PinpointManager pinpointManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +37,12 @@ public class SplashActivity extends AppCompatActivity {
 
         AWSMobileClient.getInstance().initialize(this).execute();
 
-        if(isLoggedIn()){
+        if (isLoggedIn()) {
             startService(new Intent(this, AwsPubSub.class));
+            startService(new Intent(this, TcpServer.class));
         }
+
+        awsAnalytics();
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -51,6 +58,26 @@ public class SplashActivity extends AppCompatActivity {
                 }
             }
         }, SPLASH_DISPLAY_LENGTH);
+    }
+
+    /**
+     * AWS analytics function
+     */
+
+    public void awsAnalytics() {
+        PinpointConfiguration pinpointConfig = new PinpointConfiguration(
+                getApplicationContext(),
+                AWSMobileClient.getInstance().getCredentialsProvider(),
+                AWSMobileClient.getInstance().getConfiguration());
+
+        pinpointManager = new PinpointManager(pinpointConfig);
+
+        // Start a session with Pinpoint
+        pinpointManager.getSessionClient().startSession();
+
+        // Stop the session and submit the default app started event
+        pinpointManager.getSessionClient().stopSession();
+        pinpointManager.getAnalyticsClient().submitEvents();
     }
 
     public boolean isLoggedIn() {
