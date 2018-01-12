@@ -256,7 +256,7 @@ public class DeviceDbOperation {
                 return;
             } else {
                 ContentValues value = new ContentValues();
-                value.put(ROOM_NAME, "Hall");
+                value.put(ROOM_NAME, x.getRoom());
                 value.put(THING_NAME, x.getThing());
                 value.put(DEVICE_NAME, x.getDeviceId());
                 value.put(HOME_NAME, "Home");

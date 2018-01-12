@@ -47,9 +47,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobileconnectors.pinpoint.PinpointConfiguration;
-import com.amazonaws.mobileconnectors.pinpoint.PinpointManager;
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.aura.activities.customization.CustomizationActivity;
 import com.example.wozart.aura.model.AuraSwitch;
@@ -227,7 +224,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     /**
      * Updates User name in UI, gets all the devices in cloud and populates in application
      */
@@ -243,6 +239,8 @@ public class MainActivity extends AppCompatActivity
         String email = prefs.getString("EMAIL", "defaultStringIfNothingFound");
         String userProfilePicture = prefs.getString("PROFILE_PICTURE", "defaultStringIfNothingFound");
         final String userId = prefs.getString("ID", "NULL");
+        if (!userId.equals("NULL"))
+            Constant.IDENTITY_ID = userId;
 
         if (!userProfilePicture.equalsIgnoreCase("")) {
             byte[] b = Base64.decode(userProfilePicture, Base64.DEFAULT);

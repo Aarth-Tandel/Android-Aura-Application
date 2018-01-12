@@ -24,7 +24,7 @@ public class SqlOperationDeviceTable {
 
         final ArrayList<DevicesTableDO> userDevice = new ArrayList<>();
 
-        if(userDevice.isEmpty()) return null;
+        if(devices.isEmpty()) return null;
         for (String x : devices) {
             userDevice.add(dynamoDBMapper.load(DevicesTableDO.class, x));
         }

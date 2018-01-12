@@ -17,7 +17,8 @@ public class DevicesTableDO {
     private String _deviceId;
     private List<String> _loads;
     private String _master;
-    private String _slave;
+    private String _room;
+    private List<String> _slave;
     private String _thing;
 
     @DynamoDBHashKey(attributeName = "DeviceId")
@@ -45,12 +46,20 @@ public class DevicesTableDO {
     public void setMaster(final String _master) {
         this._master = _master;
     }
+    @DynamoDBAttribute(attributeName = "Room")
+    public String getRoom() {
+        return _room;
+    }
+
+    public void setRoom(final String _room) {
+        this._room = _room;
+    }
     @DynamoDBAttribute(attributeName = "Slave")
-    public String getSlave() {
+    public List<String> getSlave() {
         return _slave;
     }
 
-    public void setSlave(final String _slave) {
+    public void setSlave(final List<String> _slave) {
         this._slave = _slave;
     }
     @DynamoDBAttribute(attributeName = "Thing")

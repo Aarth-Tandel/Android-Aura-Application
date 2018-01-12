@@ -60,7 +60,7 @@ public class HomeTab extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                //((MainActivity)getActivity()).nsdDiscovery();
+                ((MainActivity)getActivity()).nsdDiscovery();
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });

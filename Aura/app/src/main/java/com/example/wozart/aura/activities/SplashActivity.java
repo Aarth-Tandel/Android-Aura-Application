@@ -13,6 +13,7 @@ import com.amazonaws.mobileconnectors.pinpoint.PinpointConfiguration;
 import com.amazonaws.mobileconnectors.pinpoint.PinpointManager;
 import com.example.wozart.aura.MainActivity;
 import com.example.wozart.aura.R;
+import com.example.wozart.aura.activities.loginActivity.LoginActivity;
 import com.example.wozart.aura.network.AwsPubSub;
 import com.example.wozart.aura.network.TcpServer;
 import com.facebook.AccessToken;

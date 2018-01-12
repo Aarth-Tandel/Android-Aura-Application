@@ -5,8 +5,10 @@ import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.amazonaws.models.nosql.UserTableDO;
+import com.example.wozart.aura.utilities.Constant;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by wozart on 28/12/17.
@@ -15,22 +17,6 @@ import java.util.ArrayList;
 public class SqlOperationUserTable {
     private DynamoDBMapper dynamoDBMapper;
     SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
-
-    public void getDevices(final String devices) {
-
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                DevicesTableDO devicesTableDO = dynamoDBMapper.load(DevicesTableDO.class, devices);
-            }
-        }).start();
-    }
 
     public ArrayList<DevicesTableDO> getUserDevices(final String userId) {
         AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
@@ -75,5 +61,20 @@ public class SqlOperationUserTable {
             return false;
         else
             return true;
+    }
+
+    public boolean updateUserDevices(String device){
+        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                .build();
+
+        UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
+        List<String> devices = updateDevice.getDevices();
+        devices.add(device);
+        updateDevice.setDevices(devices);
+        dynamoDBMapper.save(updateDevice);
+        return true;
     }
 }

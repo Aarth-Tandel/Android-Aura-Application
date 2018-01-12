@@ -38,7 +38,7 @@
 
         <!-- Login Activity -->
         <activity
-            android:name=".activities.LoginActivity"
+            android:name=".activities.loginActivity.LoginActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <!-- Facebook Meta Data -->
@@ -62,8 +62,11 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.rooms.RoomActivity" />
-        <activity android:name=".activities.customization.CustomizationActivity"></activity>
+        <activity android:name=".activities.rooms.RoomActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".activities.customization.CustomizationActivity"
+            android:parentActivityName=".MainActivity">
+        </activity>
     </application>
 
 </manifest>

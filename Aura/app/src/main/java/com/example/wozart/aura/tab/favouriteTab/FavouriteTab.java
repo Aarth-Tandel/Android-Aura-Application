@@ -33,7 +33,7 @@ import java.util.List;
 public class FavouriteTab extends Fragment {
 
     private RecyclerView FAV_recyclerView;
-    //private FavouritesAdapter FAV_adapter;
+    private FavouritesAdapter FAV_adapter;
     private List<Favourites> favouriteList;
 
     private FavouriteDbOperation favouriteDb = new FavouriteDbOperation();
@@ -47,13 +47,13 @@ public class FavouriteTab extends Fragment {
         FAV_recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
 
         favouriteList = new ArrayList<>();
-        //FAV_adapter = new FavouritesAdapter(getActivity(), favouriteList);
+        FAV_adapter = new FavouritesAdapter(getActivity(), favouriteList);
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 3);
         FAV_recyclerView.setLayoutManager(mLayoutManager);
         FAV_recyclerView.addItemDecoration(new FavouriteTab.GridSpacingItemDecoration(2, dpToPx(10), true));
         FAV_recyclerView.setItemAnimator(new DefaultItemAnimator());
-//        FAV_recyclerView.setAdapter(FAV_adapter);
+        FAV_recyclerView.setAdapter(FAV_adapter);
 
         FavouriteDbHelper dbFavouriteHelper = new FavouriteDbHelper(getActivity());
         mFavouriteDb = dbFavouriteHelper.getWritableDatabase();
@@ -85,7 +85,7 @@ public class FavouriteTab extends Fragment {
             Favourites fav = new Favourites(x.getName(), x.getHome(), x.getDevice(), x.getRoom(), covers[2]);
             favouriteList.add(fav);
         }
-//        FAV_adapter.notifyDataSetChanged();
+        FAV_adapter.notifyDataSetChanged();
     }
 
     private BroadcastReceiver mRefresh = new BroadcastReceiver() {

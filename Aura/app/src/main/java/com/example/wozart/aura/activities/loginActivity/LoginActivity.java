@@ -1,4 +1,4 @@
-package com.example.wozart.aura.activities;
+package com.example.wozart.aura.activities.loginActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,7 +13,6 @@ import android.util.Log;
 
 import com.example.wozart.aura.MainActivity;
 import com.example.wozart.aura.R;
-import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -30,12 +29,16 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 
 public class LoginActivity extends AppCompatActivity {
 
     private LoginButton loginButton;
     private CallbackManager callbackManager;
+
+    private PrefUtil prefUtil = new PrefUtil(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,29 +47,15 @@ public class LoginActivity extends AppCompatActivity {
 
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
-        loginButton.setReadPermissions("email");
-
-        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Log.d("Facebook", "Result 1 : " + loginResult);
-            }
-
-            @Override
-            public void onCancel() {
-                // App code
-            }
-
-            @Override
-            public void onError(FacebookException exception) {
-                // App code
-            }
-        });
+        loginButton.setReadPermissions(Arrays.asList(
+                "public_profile", "email"));
 
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
+                        AccessToken accessToken = loginResult.getAccessToken();
+                        String user = loginResult.getAccessToken().getUserId();
                         setFacebookData(loginResult);
                     }
 
@@ -87,6 +76,7 @@ public class LoginActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
+
 
     private void setFacebookData(final LoginResult loginResult) {
         Bundle params = new Bundle();
