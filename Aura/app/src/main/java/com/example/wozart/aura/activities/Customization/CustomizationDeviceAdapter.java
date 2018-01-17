@@ -4,7 +4,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.nsd.NsdServiceInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,18 +27,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.wozart.amazonaws.models.nosql.ThingTableDO;
+import com.example.wozart.aura.MainActivity;
 import com.example.wozart.aura.R;
 import com.example.wozart.aura.model.AuraSwitch;
+import com.example.wozart.aura.network.NsdClient;
 import com.example.wozart.aura.network.TcpClient;
 import com.example.wozart.aura.noSql.SqlOperationThingTable;
 import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
 import com.example.wozart.aura.sqlLite.device.DeviceDbOperation;
+import com.example.wozart.aura.utilities.Constant;
 import com.example.wozart.aura.utilities.DeviceUtils;
+import com.example.wozart.aura.utilities.Encryption;
 import com.example.wozart.aura.utilities.JsonUtils;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
  * Created by wozart on 29/12/17.
@@ -49,7 +61,9 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     private DeviceDbOperation db = new DeviceDbOperation();
     private SQLiteDatabase mDb;
     private TcpClient mTcpClient;
+    private NsdClient nsdClient;
 
+    private Toast mtoast;
     private ThingTableDO KeysAndCertificates = new ThingTableDO();
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -83,15 +97,46 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
         mDb = dbHelper.getWritableDatabase();
         db.InsertBasicData(mDb);
-
+        nsdClient = new NsdClient(mContext);
+        nsdClient.initializeNsd();
+        nsdDiscovery();
 
         return new MyViewHolder(itemView);
+    }
+
+    public void nsdDiscovery() {
+        nsdClient.discoverServices();
+        final Handler NsdDiscoveryHandler = new Handler();
+        NsdDiscoveryHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                for (final NsdServiceInfo service : nsdClient.GetServiceInfo()) {
+                    JsonUtils mJsonUtils = new JsonUtils();
+                    String data = null;
+                    try {
+                        data = mJsonUtils.InitialData(convertIP());
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
+
+                    new ConnectTask(data, service.getHost().getHostAddress()).execute("");
+                    Log.d(LOG_TAG, "Initial data: " + data + " to " + service.getServiceName());
+                }
+            }
+        }, 1000);
+
+        NsdDiscoveryHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                nsdClient.stopDiscovery();
+            }
+        }, 1000);
     }
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
         final CustomizationDevices device = DeviceList.get(position);
-
+        device.setPosition(position);
         holder.textViewDevice.setText(device.getDevice());
         holder.textViewHome.setText(device.getHome());
         holder.textViewRoom.setText(device.getRoom());
@@ -101,7 +146,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 //        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail3);
 //        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail4);
 
-        if (device.getThing() != null)
+        if (device.getAws() == 1)
             holder.AwsConnectSwitch.setChecked(true);
         else
             holder.AwsConnectSwitch.setChecked(false);
@@ -194,7 +239,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 }
             });
             mTcpClient.run(data, ip);
-
             return null;
         }
 
@@ -202,6 +246,16 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
             JsonUtils mJsonUtils = new JsonUtils();
             final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
+
+            if (dummyDevice.getType() == 1 && dummyDevice.getCode().equals(Encryption.MAC(mContext))) {
+                for (NsdServiceInfo x : nsdClient.GetAllServices()) {
+                    //Find the match in services found and data received
+                    if (x.getServiceName().contains(dummyDevice.getName())) {
+                        mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress());
+                        updateAwsState(dummyDevice);
+                    }
+                }
+            }
 
             if (dummyDevice.getType() == 8 && dummyDevice.getError() == 0) {
                 final SqlOperationThingTable keysAvailable = new SqlOperationThingTable();
@@ -221,10 +275,11 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         }
     }
 
-    private void updateAwsState(String device){
+    private void updateAwsState(AuraSwitch device){
         for(CustomizationDevices x : DeviceList){
-            if(device.equals(x.getDevice())){
-
+            if(device.getName().equals(x.getDevice())){
+                x.setAws(device.getAWSConfiguration());
+                notifyItemChanged(x.getPosition(),x);
             }
         }
     }
@@ -308,6 +363,13 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             });
             dialog.show();
         }
+    }
+
+    private String convertIP() {
+        WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = mWifi.getConnectionInfo();
+        int ipAddress = wifiInfo.getIpAddress();
+        return String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
     }
 
     @Override

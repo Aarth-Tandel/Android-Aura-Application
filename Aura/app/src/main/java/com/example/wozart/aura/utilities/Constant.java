@@ -46,6 +46,7 @@ public class Constant {
     public static final String UPDATE_LOAD2_NAME = HOME_NAME + " =? and " + ROOM_NAME + " =? and " + LOAD_2 + " =?";
     public static final String UPDATE_LOAD3_NAME = HOME_NAME + " =? and " + ROOM_NAME + " =? and " + LOAD_3 + " =?";
     public static final String UPDATE_LOAD4_NAME = HOME_NAME + " =? and " + ROOM_NAME + " =? and " + LOAD_4 + " =?";
+    public static final String UPDATE_THING_NAME = DEVICE_NAME + "=?";
 
     //SQL - Lite Queries for Favourite DB
     public static final String GET_ALL_FAVOURITE = "select * from " + FavouriteContract.FavouriteEntry.TABLE_NAME + " where " + FavouriteContract.FavouriteEntry.HOME_NAME + " = ?";

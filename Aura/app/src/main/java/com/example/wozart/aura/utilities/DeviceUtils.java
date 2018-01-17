@@ -13,20 +13,21 @@ public class DeviceUtils {
     private static ArrayList<AuraSwitch> AuraFourNodeDevice = new ArrayList<>();
     public static final String TAG = "DeviceUtils";
 
-    public void RegisterDevice(AuraSwitch deviceName, String ip) {
+    public void RegisterDevice(AuraSwitch device, String ip) {
         Boolean flag = true;
         for(AuraSwitch x : AuraFourNodeDevice){
-            if(x.getName().equals(deviceName.getName()))
+            if(x.getName().equals(device.getName()))
                 flag = false;
         }
         if(flag) {
             AuraSwitch singleDevice = new AuraSwitch();
-            singleDevice.setName(deviceName.getName());
+            singleDevice.setName(device.getName());
             singleDevice.setIP(ip);
-            singleDevice.setType(deviceName.getType());
-            singleDevice.setCode(deviceName.getCode());
+            singleDevice.setType(device.getType());
+            singleDevice.setCode(device.getCode());
             singleDevice.setOnline(1);
-            singleDevice.setStates(deviceName.getStates());
+            singleDevice.setStates(device.getStates());
+            singleDevice.setAWSConfiguration(device.getAWSConfiguration());
             AuraFourNodeDevice.add(singleDevice);
         }
     }

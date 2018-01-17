@@ -5,5 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.wozart.aura.activities.customization.CustomizationActivity">
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="true"
+        android:scrollbars="none" />
 
 </android.support.constraint.ConstraintLayout>

@@ -6,12 +6,9 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
-import com.example.wozart.amazonaws.models.nosql.UserTableDO;
 import com.example.wozart.aura.activities.customization.CustomizationDevices;
-import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.DEVICE_NAME;
@@ -40,6 +37,7 @@ import static com.example.wozart.aura.utilities.Constant.UPDATE_LOAD1_NAME;
 import static com.example.wozart.aura.utilities.Constant.UPDATE_LOAD2_NAME;
 import static com.example.wozart.aura.utilities.Constant.UPDATE_LOAD3_NAME;
 import static com.example.wozart.aura.utilities.Constant.UPDATE_LOAD4_NAME;
+import static com.example.wozart.aura.utilities.Constant.UPDATE_THING_NAME;
 
 /**
  * Created by wozart on 29/12/17.
@@ -151,11 +149,11 @@ public class DeviceDbOperation {
         db.update(TABLE_NAME, cv, CRUD_ROOM, new String[]{home, previousRoom});
     }
 
-    public void UpdateRoomAndHome(SQLiteDatabase db, String home, String room, String device){
+    public void UpdateRoomAndHome(SQLiteDatabase db, String home, String room, String device) {
         ContentValues cv = new ContentValues();
         cv.put(ROOM_NAME, room);
         cv.put(HOME_NAME, home);
-        db.update(TABLE_NAME, cv,UPDATE_DEVICE , new String[]{device});
+        db.update(TABLE_NAME, cv, UPDATE_DEVICE, new String[]{device});
     }
 
     public void TransferDeletedDevices(SQLiteDatabase db, String home, String room) {
@@ -247,12 +245,13 @@ public class DeviceDbOperation {
 
     public void devicesFromAws(SQLiteDatabase db, ArrayList<DevicesTableDO> devices) {
 
-        if(devices == null) return;
+        if (devices == null) return;
 
         for (DevicesTableDO x : devices) {
             boolean isThingAlreadyPresent;
             isThingAlreadyPresent = checkDevice(db, x.getDeviceId());
             if (!isThingAlreadyPresent) {
+                updateThing(db, x.getDeviceId());
                 return;
             } else {
                 ContentValues value = new ContentValues();
@@ -287,6 +286,12 @@ public class DeviceDbOperation {
         }
     }
 
+    private void updateThing(SQLiteDatabase db, String device){
+        ContentValues cv = new ContentValues();
+        cv.put(THING_NAME, "");
+        db.update(TABLE_NAME, cv, UPDATE_THING_NAME, new String[]{device});
+    }
+
     public ArrayList<String> GetThingName(SQLiteDatabase db) {
         ArrayList<String> devices = new ArrayList<>();
         Cursor cursor = db.rawQuery(GET_THING_NAME, null);
@@ -310,25 +315,25 @@ public class DeviceDbOperation {
         return devices;
     }
 
-    public void updateLoadName(SQLiteDatabase db, String oldName, String home, String room, int loadNumber, String load){
+    public void updateLoadName(SQLiteDatabase db, String oldName, String home, String room, int loadNumber, String load) {
         String[] params = new String[]{home, room, oldName};
         ContentValues values = new ContentValues();
-        switch (loadNumber){
+        switch (loadNumber) {
             case 0:
                 values.put(LOAD_1, load);
-                db.update(TABLE_NAME,values, UPDATE_LOAD1_NAME, params);
+                db.update(TABLE_NAME, values, UPDATE_LOAD1_NAME, params);
                 break;
             case 1:
                 values.put(LOAD_2, load);
-                db.update(TABLE_NAME,values, UPDATE_LOAD2_NAME, params);
+                db.update(TABLE_NAME, values, UPDATE_LOAD2_NAME, params);
                 break;
             case 2:
-                values.put(LOAD_3,load);
-                db.update(TABLE_NAME,values, UPDATE_LOAD3_NAME, params);
+                values.put(LOAD_3, load);
+                db.update(TABLE_NAME, values, UPDATE_LOAD3_NAME, params);
                 break;
             case 3:
                 values.put(LOAD_4, load);
-                db.update(TABLE_NAME,values, UPDATE_LOAD4_NAME, params);
+                db.update(TABLE_NAME, values, UPDATE_LOAD4_NAME, params);
                 break;
         }
     }

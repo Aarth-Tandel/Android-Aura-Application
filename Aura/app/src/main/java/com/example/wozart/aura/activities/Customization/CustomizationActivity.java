@@ -3,8 +3,8 @@ package com.example.wozart.aura.activities.customization;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -67,7 +67,9 @@ public class CustomizationActivity extends AppCompatActivity {
 
         for (CustomizationDevices device : devices) {
             if (device.getDevice() != null) {
-                CustomizationDevices a = new CustomizationDevices(device.getHome(), device.getRoom(), device.getDevice(), device.getThing());
+                if (device.getThing() != null)
+                    device.setAws(1);
+                CustomizationDevices a = new CustomizationDevices(device.getHome(), device.getRoom(), device.getDevice(), device.getThing(), device.getAws(), device.getOnline());
                 DeviceList.add(a);
             }
 

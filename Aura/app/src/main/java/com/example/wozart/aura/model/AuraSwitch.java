@@ -16,7 +16,7 @@ public class AuraSwitch {
     private int nodes = 4;
     private String ip;
     private String code = Constant.UNPAIRED;
-    private int aws = 3;
+    private int aws = 0;
     private int error = 0;
     private int online = 0;
     private int led = 0;
