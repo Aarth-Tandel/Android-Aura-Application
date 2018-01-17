@@ -298,7 +298,7 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
             String shadow = intent.getStringExtra("data");
             if(shadow != "Connected") {
                 String segments[] = shadow.split("/");
-                String device = db.GetDevice(mDb, segments[1]);
+                String device = db.GetDeviceForThing(mDb, segments[1]);
                 AwsState dummyShadow = JsonUtils.DeserializeAwsData(segments[0]);
                 if (dummyShadow != null) {
                     mDeviceUtils.UpdateSwitchStatesFromShadow(dummyShadow, segments[1], device);

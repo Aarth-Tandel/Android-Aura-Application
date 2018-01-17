@@ -592,7 +592,7 @@ public class MainActivity extends AppCompatActivity
                     awsPubSub.AwsSubscribe(x);
                 }
             } else {
-                String device = db.GetDevice(mDb, segments[1]);
+                String device = db.GetDeviceForThing(mDb, segments[1]);
                 mDeviceUtils.CloudDevices(JsonUtils.DeserializeAwsData(segments[0]), segments[1], device);
             }
         }
@@ -640,6 +640,7 @@ public class MainActivity extends AppCompatActivity
                 mtoast = Toast.makeText(context, text, duration);
                 mtoast.show();
             } else {
+                Log.i(LOG_TAG, "Data Received : " + message[0]);
                 JsonUtils mJsonUtils = new JsonUtils();
                 AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
 

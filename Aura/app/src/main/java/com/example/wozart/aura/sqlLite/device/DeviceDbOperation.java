@@ -28,6 +28,7 @@ import static com.example.wozart.aura.utilities.Constant.GET_DEVICES_FOR_THING;
 import static com.example.wozart.aura.utilities.Constant.GET_DEVICES_IN_ROOM;
 import static com.example.wozart.aura.utilities.Constant.GET_LOADS;
 import static com.example.wozart.aura.utilities.Constant.GET_ROOMS;
+import static com.example.wozart.aura.utilities.Constant.GET_ROOM_FOR_DEVICE;
 import static com.example.wozart.aura.utilities.Constant.GET_THING_NAME;
 import static com.example.wozart.aura.utilities.Constant.INSERT_DEVICES;
 import static com.example.wozart.aura.utilities.Constant.INSERT_INITIAL_DATA;
@@ -303,10 +304,22 @@ public class DeviceDbOperation {
         return devices;
     }
 
-    public String GetDevice(SQLiteDatabase db, String thing) {
+    public String GetDeviceForThing(SQLiteDatabase db, String thing) {
         String devices = null;
         String[] params = new String[]{thing};
         Cursor cursor = db.rawQuery(GET_DEVICES_FOR_THING, params);
+        while (cursor.moveToNext()) {
+            if (cursor.getString(0) != null)
+                devices = cursor.getString(0);
+        }
+        cursor.close();
+        return devices;
+    }
+
+    public String GetDeviceRoom(SQLiteDatabase db, String device){
+        String devices = null;
+        String[] params = new String[]{device};
+        Cursor cursor = db.rawQuery(GET_ROOM_FOR_DEVICE, params);
         while (cursor.moveToNext()) {
             if (cursor.getString(0) != null)
                 devices = cursor.getString(0);

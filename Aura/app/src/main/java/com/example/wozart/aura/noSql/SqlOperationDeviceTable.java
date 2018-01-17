@@ -30,4 +30,27 @@ public class SqlOperationDeviceTable {
         }
         return userDevice;
     }
+
+    public boolean newUserDevice(String userId, String device, String room){
+        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                .build();
+
+        List<String> loads = new ArrayList<>();
+        loads.add("LOAD_1");
+        loads.add("LOAD_2");
+        loads.add("LOAD_3");
+        loads.add("LOAD_4");
+
+        DevicesTableDO updateDevices = new DevicesTableDO();
+        updateDevices.setMaster(userId);
+        updateDevices.setDeviceId(device);
+        updateDevices.setSlave(null);
+        updateDevices.setLoads(loads);
+        updateDevices.setRoom(room);
+        dynamoDBMapper.save(updateDevices);
+        return true;
+    }
 }

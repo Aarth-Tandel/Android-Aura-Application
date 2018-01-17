@@ -32,6 +32,7 @@ import com.example.wozart.aura.R;
 import com.example.wozart.aura.model.AuraSwitch;
 import com.example.wozart.aura.network.NsdClient;
 import com.example.wozart.aura.network.TcpClient;
+import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
 import com.example.wozart.aura.noSql.SqlOperationThingTable;
 import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
@@ -51,7 +52,7 @@ import static com.facebook.FacebookSdk.getApplicationContext;
  * Created by wozart on 29/12/17.
  */
 
-public class CustomizationDeviceAdapter extends RecyclerView.Adapter<CustomizationDeviceAdapter.MyViewHolder>{
+public class CustomizationDeviceAdapter extends RecyclerView.Adapter<CustomizationDeviceAdapter.MyViewHolder> {
     private static final String LOG_TAG = CustomizationActivity.class.getSimpleName();
 
     private Context mContext;
@@ -208,7 +209,12 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
     private void sendTcpKeys(ArrayList<String> data, String whatData, String device) {
         for (String key : data) {
-            new ConnectTask(key, mDeviceUtils.GetIP(device)).execute("");
+            try {
+                new ConnectTask(key, mDeviceUtils.GetIP(device)).execute("");
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         if (whatData.equals("PrivateKey")) {
@@ -258,16 +264,15 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             }
 
             if (dummyDevice.getType() == 8 && dummyDevice.getError() == 0) {
-                final SqlOperationThingTable keysAvailable = new SqlOperationThingTable();
-                final SqlOperationUserTable updateDevice = new SqlOperationUserTable();
+                final SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
                 Runnable runnable = new Runnable() {
                     public void run() {
-                        keysAvailable.updateAvailability(KeysAndCertificates.getThing());
-                        updateDevice.updateUserDevices(KeysAndCertificates.getThing() + ',' + dummyDevice.getName());
+                        sqlOperationDeviceTable.newUserDevice(Constant.IDENTITY_ID, dummyDevice.getName(), db.GetDeviceRoom(mDb, dummyDevice.getName()));
                     }
                 };
                 Thread getAvailableDevices = new Thread(runnable);
                 getAvailableDevices.start();
+                Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
                 //updateAwsState(dummyDevice.getName());
             } else if (dummyDevice.getType() == 8 && dummyDevice.getError() == 1) {
                 Toast.makeText(mContext, "Cannot receive all Packages, please try again ", Toast.LENGTH_SHORT).show();
@@ -275,11 +280,11 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         }
     }
 
-    private void updateAwsState(AuraSwitch device){
-        for(CustomizationDevices x : DeviceList){
-            if(device.getName().equals(x.getDevice())){
+    private void updateAwsState(AuraSwitch device) {
+        for (CustomizationDevices x : DeviceList) {
+            if (device.getName().equals(x.getDevice())) {
                 x.setAws(device.getAWSConfiguration());
-                notifyItemChanged(x.getPosition(),x);
+                notifyItemChanged(x.getPosition(), x);
             }
         }
     }
@@ -349,11 +354,11 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 public void onClick(DialogInterface dialog, int whichButton) {
                     if (homeSpinner.getSelectedItem().toString() != null && roomSpinner.getSelectedItem().toString() != null) {
                         db.UpdateRoomAndHome(mDb, homeSpinner.getSelectedItem().toString(), roomSpinner.getSelectedItem().toString(), deviceSelected);
-                        for(CustomizationDevices x : DeviceList){
-                            if(deviceSelected.equals(x.getDevice())){
+                        for (CustomizationDevices x : DeviceList) {
+                            if (deviceSelected.equals(x.getDevice())) {
                                 x.setHome(homeSpinner.getSelectedItem().toString());
                                 x.setRoom(roomSpinner.getSelectedItem().toString());
-                                notifyItemChanged(Position,x);
+                                notifyItemChanged(Position, x);
                             }
                         }
                     } else {

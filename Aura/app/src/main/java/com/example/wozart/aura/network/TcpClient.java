@@ -78,8 +78,6 @@ public class TcpClient {
             //here you must put your computer's IP address.
             InetAddress serverAddr = InetAddress.getByName(ip);
 
-            Log.d("TCP Client", "C: Connecting...");
-
             //create a socket to make the connection with the server
             Socket socket = new Socket();
             socket.connect(new InetSocketAddress(serverAddr,SERVER_PORT),2000);
@@ -92,7 +90,7 @@ public class TcpClient {
                 mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // send login name
                 sendMessage(data);
-
+                Log.i("TCP Cleint","TCP TX Data : " + data);
                 //in this while the client listens for the messages sent by the server
                 int count = 0;
                 boolean messageFlag = false;
@@ -115,7 +113,6 @@ public class TcpClient {
             } finally {
                 //the socket must be closed. It is not possible to reconnect to this socket
                 // after it is closed, which means a new socket instance has to be created.
-                Log.d("TCP", "Socket Closed");
                 socket.close();
                 stopClient();
             }
