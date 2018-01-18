@@ -4,6 +4,7 @@ import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
+import com.example.wozart.aura.utilities.Constant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class SqlOperationDeviceTable {
         return userDevice;
     }
 
-    public boolean newUserDevice(String userId, String device, String room){
+    public boolean newUserDevice(String device, String room){
         AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
         this.dynamoDBMapper = DynamoDBMapper.builder()
                 .dynamoDBClient(dynamoDBClient)
@@ -45,12 +46,36 @@ public class SqlOperationDeviceTable {
         loads.add("LOAD_4");
 
         DevicesTableDO updateDevices = new DevicesTableDO();
-        updateDevices.setMaster(userId);
+        updateDevices.setMaster(Constant.IDENTITY_ID);
         updateDevices.setDeviceId(device);
         updateDevices.setSlave(null);
         updateDevices.setLoads(loads);
         updateDevices.setRoom(room);
         dynamoDBMapper.save(updateDevices);
         return true;
+    }
+
+    public boolean deleteDevice(String device){
+        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                .build();
+
+        DevicesTableDO devicesTableDO = new DevicesTableDO();
+        devicesTableDO.setDeviceId(device);
+        dynamoDBMapper.delete(devicesTableDO);
+        return true;
+    }
+
+    public String getThingForDevice(String device){
+        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                .build();
+
+        DevicesTableDO deviceThing = dynamoDBMapper.load(DevicesTableDO.class, device);
+        return deviceThing.getThing();
     }
 }

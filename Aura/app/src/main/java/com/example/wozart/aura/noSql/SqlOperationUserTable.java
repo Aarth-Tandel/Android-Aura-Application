@@ -8,6 +8,7 @@ import com.example.wozart.amazonaws.models.nosql.UserTableDO;
 import com.example.wozart.aura.utilities.Constant;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -73,6 +74,27 @@ public class SqlOperationUserTable {
         UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
         List<String> devices = updateDevice.getDevices();
         devices.add(device);
+        updateDevice.setDevices(devices);
+        dynamoDBMapper.save(updateDevice);
+        return true;
+    }
+
+    public boolean deleteUserDevice(String device){
+        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+        this.dynamoDBMapper = DynamoDBMapper.builder()
+                .dynamoDBClient(dynamoDBClient)
+                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                .build();
+
+        String id = Constant.IDENTITY_ID;
+        UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
+        List<String> devices = updateDevice.getDevices();
+        for (Iterator<String> iter = devices.listIterator(); iter.hasNext(); ) {
+            String a = iter.next();
+            if (a.equals(device)) {
+                iter.remove();
+            }
+        }
         updateDevice.setDevices(devices);
         dynamoDBMapper.save(updateDevice);
         return true;

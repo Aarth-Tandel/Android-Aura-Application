@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -66,6 +68,9 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
     private Toast mtoast;
     private ThingTableDO KeysAndCertificates = new ThingTableDO();
+    private SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
+    private SqlOperationUserTable sqlOperationUserTable = new SqlOperationUserTable();
+    private DeviceDbOperation deviceDbOperation = new DeviceDbOperation();
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView textViewDevice, textViewHome, textViewRoom;
@@ -147,7 +152,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 //        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail3);
 //        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail4);
 
-        if (device.getAws() == 1)
+        if (device.getAws() == 1 || device.getThing() != null)
             holder.AwsConnectSwitch.setChecked(true);
         else
             holder.AwsConnectSwitch.setChecked(false);
@@ -198,7 +203,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 ArrayList<String> data = jsonUtils.Certificates(KeysAndCertificates.getCertificate());
                 sendTcpKeys(data, "Certificate", device);
                 Log.d(LOG_TAG, "Send Certificate Keys" + data);
-
             }
         };
         Thread sendCertificates = new Thread(runnable);
@@ -281,16 +285,17 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             }
 
             if (dummyDevice.getType() == 8 && dummyDevice.getError() == 0) {
-                final SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
                 Runnable runnable = new Runnable() {
                     public void run() {
-                        sqlOperationDeviceTable.newUserDevice(Constant.IDENTITY_ID, dummyDevice.getName(), db.GetDeviceRoom(mDb, dummyDevice.getName()));
+                        sqlOperationUserTable.updateUserDevices(dummyDevice.getName());
+                        sqlOperationDeviceTable.newUserDevice(dummyDevice.getName(), db.GetDeviceRoom(mDb, dummyDevice.getName()));
+                        deviceDbOperation.updateThing(mDb, dummyDevice.getName(),sqlOperationDeviceTable.getThingForDevice(dummyDevice.getName()));
                     }
                 };
                 Thread getAvailableDevices = new Thread(runnable);
                 getAvailableDevices.start();
                 Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
-                //updateAwsState(dummyDevice.getName());
+                updateAwsState(dummyDevice);
             } else if (dummyDevice.getType() == 8 && dummyDevice.getError() == 1) {
                 Toast.makeText(mContext, "Cannot receive all Packages, please try again ", Toast.LENGTH_SHORT).show();
             }
@@ -339,6 +344,19 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                     return true;
 
                 case R.id.action_delete:
+                    if(isConnectingToInternet(mContext)){
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                db.removeDevice(mDb, DeviceSelected);
+                                sqlOperationUserTable.deleteUserDevice(DeviceSelected);
+                                sqlOperationDeviceTable.deleteDevice(DeviceSelected);
+                            }
+                        };
+                        Thread getAvailableDevices = new Thread(runnable);
+                        getAvailableDevices.start();
+                    }else{
+                        mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
+                    }
                 default:
             }
             return false;
@@ -389,6 +407,18 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         }
     }
 
+    private void updateDevice(String device){
+        CustomizationDevices deleteDevice = new CustomizationDevices();
+        for (CustomizationDevices x : DeviceList) {
+            if (x.getDevice().equals(device)) {
+                deleteDevice = x;
+            }
+        }
+        DeviceList.remove(deleteDevice.getPosition());
+        notifyItemRemoved(deleteDevice.getPosition());
+        notifyItemChanged(deleteDevice.getPosition());
+    }
+
     private String convertIP() {
         WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = mWifi.getConnectionInfo();
@@ -399,5 +429,16 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     @Override
     public int getItemCount() {
         return DeviceList.size();
+    }
+
+    public static boolean isConnectingToInternet(Context context) {
+
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
     }
 }

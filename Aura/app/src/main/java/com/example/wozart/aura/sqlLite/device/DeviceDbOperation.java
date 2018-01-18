@@ -22,6 +22,7 @@ import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.THING_NAME;
 import static com.example.wozart.aura.utilities.Constant.CHECK_DEVICES;
 import static com.example.wozart.aura.utilities.Constant.CRUD_ROOM;
+import static com.example.wozart.aura.utilities.Constant.DELETE_DEVICE;
 import static com.example.wozart.aura.utilities.Constant.GET_ALL_DEVICES;
 import static com.example.wozart.aura.utilities.Constant.GET_ALL_HOME;
 import static com.example.wozart.aura.utilities.Constant.GET_DEVICES_FOR_THING;
@@ -252,7 +253,7 @@ public class DeviceDbOperation {
             boolean isThingAlreadyPresent;
             isThingAlreadyPresent = checkDevice(db, x.getDeviceId());
             if (!isThingAlreadyPresent) {
-                updateThing(db, x.getDeviceId());
+                updateThing(db, x.getDeviceId(), null);
                 return;
             } else {
                 ContentValues value = new ContentValues();
@@ -287,9 +288,9 @@ public class DeviceDbOperation {
         }
     }
 
-    private void updateThing(SQLiteDatabase db, String device){
+    public void updateThing(SQLiteDatabase db, String device, String thing){
         ContentValues cv = new ContentValues();
-        cv.put(THING_NAME, "");
+        cv.put(THING_NAME, thing);
         db.update(TABLE_NAME, cv, UPDATE_THING_NAME, new String[]{device});
     }
 
@@ -349,6 +350,11 @@ public class DeviceDbOperation {
                 db.update(TABLE_NAME, values, UPDATE_LOAD4_NAME, params);
                 break;
         }
+    }
+
+    public void removeDevice(SQLiteDatabase db, String device){
+        String[] params = new String[]{device};
+        db.delete(TABLE_NAME, DELETE_DEVICE, params);
     }
 
 }

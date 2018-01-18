@@ -80,7 +80,7 @@ public class TcpClient {
 
             //create a socket to make the connection with the server
             Socket socket = new Socket();
-            socket.connect(new InetSocketAddress(serverAddr,SERVER_PORT),2000);
+            socket.connect(new InetSocketAddress(serverAddr,SERVER_PORT),5000);
             try {
 
                 //sends the message to the server
