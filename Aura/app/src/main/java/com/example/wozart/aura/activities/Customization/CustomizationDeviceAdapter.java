@@ -180,14 +180,15 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             public void run() {
                 KeysAndCertificates = keysAvailable.searchAvailableDevices();
                 KeysAndCertificates.getThing();
-                updateUserDevice(device);
+                sendCertificate(device);
+                sendKeys(device);
             }
         };
         Thread getAvailableDevices = new Thread(runnable);
         getAvailableDevices.start();
     }
 
-    private void updateUserDevice(final String device) {
+    private void sendCertificate(final String device) {
         final JsonUtils jsonUtils = new JsonUtils();
         final String[] nameRegion = {null};
         Runnable runnable = new Runnable() {
@@ -197,14 +198,27 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 ArrayList<String> data = jsonUtils.Certificates(KeysAndCertificates.getCertificate());
                 sendTcpKeys(data, "Certificate", device);
                 Log.d(LOG_TAG, "Send Certificate Keys" + data);
-                data = jsonUtils.PrivateKeys(KeysAndCertificates.getPrivateKey());
+
+            }
+        };
+        Thread sendCertificates = new Thread(runnable);
+        sendCertificates.start();
+    }
+
+    private void sendKeys(final String device) {
+        final JsonUtils jsonUtils = new JsonUtils();
+        final String[] nameRegion = {null};
+        Runnable runnable = new Runnable() {
+            public void run() {
+                nameRegion[0] = jsonUtils.AwsRegionThing(KeysAndCertificates.getRegion(), KeysAndCertificates.getThing());
+                ArrayList<String> data = jsonUtils.PrivateKeys(KeysAndCertificates.getPrivateKey());
                 sendTcpKeys(data, "PrivateKey", device);
                 Log.d(LOG_TAG, "Send Private Keys" + data);
 
             }
         };
-        Thread getAvailableDevices = new Thread(runnable);
-        getAvailableDevices.start();
+        Thread sendCertificates = new Thread(runnable);
+        sendCertificates.start();
     }
 
     private void sendTcpKeys(ArrayList<String> data, String whatData, String device) {
@@ -222,6 +236,9 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         }
     }
 
+    /**
+     * Sending and receiving messages to TCP client
+     */
     private class ConnectTask extends AsyncTask<String, String, TcpClient> {
 
         private String data = null;
@@ -320,6 +337,8 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 case R.id.action_add_favourite:
                     editBoxPopUp(DeviceSelected);
                     return true;
+
+                case R.id.action_delete:
                 default:
             }
             return false;
