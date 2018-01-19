@@ -253,7 +253,6 @@ public class DeviceDbOperation {
             boolean isThingAlreadyPresent;
             isThingAlreadyPresent = checkDevice(db, x.getDeviceId());
             if (!isThingAlreadyPresent) {
-                updateThing(db, x.getDeviceId(), null);
                 return;
             } else {
                 ContentValues value = new ContentValues();

@@ -11,7 +11,6 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -29,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.wozart.amazonaws.models.nosql.ThingTableDO;
-import com.example.wozart.aura.MainActivity;
 import com.example.wozart.aura.R;
 import com.example.wozart.aura.model.AuraSwitch;
 import com.example.wozart.aura.network.NsdClient;
@@ -39,7 +37,6 @@ import com.example.wozart.aura.noSql.SqlOperationThingTable;
 import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
 import com.example.wozart.aura.sqlLite.device.DeviceDbOperation;
-import com.example.wozart.aura.utilities.Constant;
 import com.example.wozart.aura.utilities.DeviceUtils;
 import com.example.wozart.aura.utilities.Encryption;
 import com.example.wozart.aura.utilities.JsonUtils;
@@ -48,6 +45,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
@@ -289,7 +287,12 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                     public void run() {
                         sqlOperationUserTable.updateUserDevices(dummyDevice.getName());
                         sqlOperationDeviceTable.newUserDevice(dummyDevice.getName(), db.GetDeviceRoom(mDb, dummyDevice.getName()));
-                        deviceDbOperation.updateThing(mDb, dummyDevice.getName(),sqlOperationDeviceTable.getThingForDevice(dummyDevice.getName()));
+                        try {
+                            Thread.sleep(3000);
+                            deviceDbOperation.updateThing(mDb, dummyDevice.getName(), sqlOperationDeviceTable.getThingForDevice(dummyDevice.getName()));
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 };
                 Thread getAvailableDevices = new Thread(runnable);
@@ -305,7 +308,8 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     private void updateAwsState(AuraSwitch device) {
         for (CustomizationDevices x : DeviceList) {
             if (device.getName().equals(x.getDevice())) {
-                x.setAws(device.getAWSConfiguration());
+                if (device.getError() == 0) x.setAws(1);
+                else x.setAws(0);
                 notifyItemChanged(x.getPosition(), x);
             }
         }
@@ -344,17 +348,18 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                     return true;
 
                 case R.id.action_delete:
-                    if(isConnectingToInternet(mContext)){
+                    if (isConnectingToInternet(mContext)) {
                         Runnable runnable = new Runnable() {
                             public void run() {
                                 db.removeDevice(mDb, DeviceSelected);
                                 sqlOperationUserTable.deleteUserDevice(DeviceSelected);
                                 sqlOperationDeviceTable.deleteDevice(DeviceSelected);
+                                deleteDevice(DeviceSelected);
                             }
                         };
                         Thread getAvailableDevices = new Thread(runnable);
                         getAvailableDevices.start();
-                    }else{
+                    } else {
                         mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
                     }
                 default:
@@ -407,16 +412,24 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         }
     }
 
-    private void updateDevice(String device){
+    private void deleteDevice(String device) {
         CustomizationDevices deleteDevice = new CustomizationDevices();
         for (CustomizationDevices x : DeviceList) {
             if (x.getDevice().equals(device)) {
                 deleteDevice = x;
             }
         }
-        DeviceList.remove(deleteDevice.getPosition());
-        notifyItemRemoved(deleteDevice.getPosition());
-        notifyItemChanged(deleteDevice.getPosition());
+        final CustomizationDevices finalDeleteDevice = deleteDevice;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                DeviceList.remove(finalDeleteDevice.getPosition());
+                notifyItemRemoved(finalDeleteDevice.getPosition());
+                notifyItemChanged(finalDeleteDevice.getPosition());
+
+            }
+        });
+
     }
 
     private String convertIP() {
