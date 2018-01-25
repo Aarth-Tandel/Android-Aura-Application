@@ -15,11 +15,18 @@ public class DeviceUtils {
 
     public void RegisterDevice(AuraSwitch device, String ip) {
         Boolean flag = true;
-        for(AuraSwitch x : AuraFourNodeDevice){
-            if(x.getName().equals(device.getName()))
-                flag = false;
+        for (AuraSwitch x : AuraFourNodeDevice) {
+            if (x.getName().equals(device.getName())) {
+                x.setIP(ip);
+                x.setType(device.getType());
+                x.setCode(device.getCode());
+                x.setOnline(1);
+                x.setStates(device.getStates());
+                x.setAWSConfiguration(device.getAWSConfiguration());
+            }
+            flag = false;
         }
-        if(flag) {
+        if (flag) {
             AuraSwitch singleDevice = new AuraSwitch();
             singleDevice.setName(device.getName());
             singleDevice.setIP(ip);
@@ -32,13 +39,13 @@ public class DeviceUtils {
         }
     }
 
-    public void CloudDevices(AwsState shadow, String thing, String device){
+    public void CloudDevices(AwsState shadow, String thing, String device) {
         Boolean flag = true;
-        for(AuraSwitch x : AuraFourNodeDevice){
-            if(x.getName().equals(device))
+        for (AuraSwitch x : AuraFourNodeDevice) {
+            if (x.getName().equals(device))
                 flag = false;
         }
-        if(flag) {
+        if (flag) {
             AuraSwitch singleDevice = new AuraSwitch();
             singleDevice.setName(device);
             singleDevice.setOnline(1);
@@ -61,7 +68,7 @@ public class DeviceUtils {
         return type;
     }
 
-    public void UpdatePairingData(String deviceName, String code){
+    public void UpdatePairingData(String deviceName, String code) {
         for (AuraSwitch c : AuraFourNodeDevice) {
             if (c.getName().contains(deviceName)) {
                 c.setCode(code);
@@ -86,7 +93,7 @@ public class DeviceUtils {
         return null;
     }
 
-    public void UpdateSwitchStatesFromShadow(AwsState shadow, String thing, String device){
+    public void UpdateSwitchStatesFromShadow(AwsState shadow, String thing, String device) {
         for (AuraSwitch c : AuraFourNodeDevice) {
             if (device.equals(c.getName())) {
                 c.setStates(shadow.getStates());
@@ -133,7 +140,7 @@ public class DeviceUtils {
         return SingleDevice;
     }
 
-    public String GetCode(String deviceName){
+    public String GetCode(String deviceName) {
         String code = null;
         for (AuraSwitch c : AuraFourNodeDevice) {
             if (deviceName.equals(c.getName())) {
@@ -153,7 +160,7 @@ public class DeviceUtils {
         return ip;
     }
 
-    public ArrayList<AuraSwitch> GetDevices(){
+    public ArrayList<AuraSwitch> GetDevices() {
         return AuraFourNodeDevice;
     }
 }

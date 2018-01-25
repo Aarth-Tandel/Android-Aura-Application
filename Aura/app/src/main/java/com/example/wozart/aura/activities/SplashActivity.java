@@ -1,7 +1,10 @@
 package com.example.wozart.aura.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -36,14 +39,16 @@ public class SplashActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.setStatusBarColor(Color.BLACK);
 
-        AWSMobileClient.getInstance().initialize(this).execute();
 
         if (isLoggedIn()) {
-            startService(new Intent(this, AwsPubSub.class));
             startService(new Intent(this, TcpServer.class));
-        }
+            if (isConnectingToInternet(this)) {
+                AWSMobileClient.getInstance().initialize(SplashActivity.this).execute();
+                startService(new Intent(this, AwsPubSub.class));
+                awsAnalytics();
+            }
 
-        awsAnalytics();
+        }
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -84,5 +89,16 @@ public class SplashActivity extends AppCompatActivity {
     public boolean isLoggedIn() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         return accessToken != null;
+    }
+
+    public static boolean isConnectingToInternet(Context context) {
+
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
     }
 }

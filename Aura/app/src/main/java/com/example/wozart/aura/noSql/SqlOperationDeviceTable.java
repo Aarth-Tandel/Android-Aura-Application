@@ -8,6 +8,7 @@ import com.example.wozart.aura.utilities.Constant;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wozart on 02/01/18.
@@ -25,7 +26,7 @@ public class SqlOperationDeviceTable {
 
         final ArrayList<DevicesTableDO> userDevice = new ArrayList<>();
 
-        if(devices.isEmpty()) return null;
+        if(devices == null) return null;
         for (String x : devices) {
             userDevice.add(dynamoDBMapper.load(DevicesTableDO.class, x));
         }
@@ -46,7 +47,9 @@ public class SqlOperationDeviceTable {
         loads.add("LOAD_4");
 
         DevicesTableDO updateDevices = new DevicesTableDO();
-        updateDevices.setMaster(Constant.IDENTITY_ID);
+        Map<String, String> updatedName = null;
+        updatedName.put(Constant.IDENTITY_ID, Constant.USERNAME);
+        updateDevices.setMaster(updatedName);
         updateDevices.setDeviceId(device);
         updateDevices.setSlave(null);
         updateDevices.setLoads(loads);

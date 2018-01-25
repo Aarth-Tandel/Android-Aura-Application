@@ -12,6 +12,8 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiConfiguration;
@@ -49,6 +51,7 @@ import android.widget.Toast;
 
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.aura.activities.customization.CustomizationActivity;
+import com.example.wozart.aura.activities.sharing.SharingActivity;
 import com.example.wozart.aura.model.AuraSwitch;
 import com.example.wozart.aura.network.AwsPubSub;
 import com.example.wozart.aura.network.NsdClient;
@@ -126,7 +129,6 @@ public class MainActivity extends AppCompatActivity
         initializeFab();
         initializeDiscovery();
         updateUSerInfo();
-
     }
 
     private void initializeDiscovery() {
@@ -171,9 +173,9 @@ public class MainActivity extends AppCompatActivity
 
     private void initializeFab() {
         materialDesignFAM = (FloatingActionMenu) findViewById(R.id.material_design_android_floating_action_menu);
-        AddDevice = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.add_device);
-        ConfigureDevice = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.configure_device);
-        AddRooms = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.add_room);
+        AddDevice = (FloatingActionButton) findViewById(R.id.add_device);
+        ConfigureDevice = (FloatingActionButton) findViewById(R.id.configure_device);
+        AddRooms = (FloatingActionButton) findViewById(R.id.add_room);
 
         AddRooms.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -242,6 +244,9 @@ public class MainActivity extends AppCompatActivity
         if (!userId.equals("NULL"))
             Constant.IDENTITY_ID = userId;
 
+        if(!userName.equals("defaultStringIfNothingFound"))
+            Constant.USERNAME = userName;
+
         if (!userProfilePicture.equalsIgnoreCase("")) {
             byte[] b = Base64.decode(userProfilePicture, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -251,20 +256,21 @@ public class MainActivity extends AppCompatActivity
         userNameTextView.setText(userName);
         userEmailTextView.setText(email);
 
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (!userId.equals("NULL")) {
-                    if (!sqlOperationUserTable.isUserAlreadyRegistered(userId)) {
-                        sqlOperationUserTable.insertUser(userId);
-                    } else {
-                        ArrayList<DevicesTableDO> devices = sqlOperationUserTable.getUserDevices(userId);
-                        db.devicesFromAws(mDb, devices);
+        if(isConnectingToInternet(this)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!userId.equals("NULL")) {
+                        if (!sqlOperationUserTable.isUserAlreadyRegistered(userId)) {
+                            sqlOperationUserTable.insertUser(userId);
+                        } else {
+                            ArrayList<DevicesTableDO> devices = sqlOperationUserTable.getUserDevices(userId);
+                            db.devicesFromAws(mDb, devices);
+                        }
                     }
                 }
-            }
-        }).start();
+            }).start();
+        }
     }
 
     @Override
@@ -372,6 +378,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
 
         } else if (id == R.id.nav_share) {
+            Intent intent = new Intent(this, SharingActivity.class);
+            startActivity(intent);
 
         } else if (id == R.id.nav_send) {
 
@@ -525,7 +533,7 @@ public class MainActivity extends AppCompatActivity
                         flag[0] = false;
                     }
                 }
-                if (flag[0]) {
+                if (flag[0] && !input.getText().toString().toLowerCase().equals("hall")) {
                     db.InsertRoom(mDb, SELECTED_HOME, input.getText().toString().trim());
                     refreshHomeTab(SELECTED_HOME);
                     Snackbar.make(materialDesignFAM, "Room added", Snackbar.LENGTH_LONG).setAction("Action", null).show();
@@ -585,11 +593,16 @@ public class MainActivity extends AppCompatActivity
             String shadow = intent.getStringExtra("data");
             String segments[] = shadow.split("/");
             if (shadow.equals("Connected")) {
-                ArrayList<String> things = db.GetThingName(mDb);
+                final ArrayList<String> things = db.GetThingName(mDb);
                 for (String x : things) {
-                    awsPubSub.AwsGet(x);
-                    awsPubSub.AwsGetPublish(x);
-                    awsPubSub.AwsSubscribe(x);
+                    try {
+                        awsPubSub.AwsGet(x);
+                        awsPubSub.AwsGetPublish(x);
+                        awsPubSub.AwsSubscribe(x);
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             } else {
                 String device = db.GetDeviceForThing(mDb, segments[1]);
@@ -679,7 +692,6 @@ public class MainActivity extends AppCompatActivity
      */
 
     private class ConfigureListener implements View.OnClickListener {
-
         private AuraSwitch deviceToPair;
 
         private ConfigureListener(AuraSwitch device) {
@@ -740,5 +752,20 @@ public class MainActivity extends AppCompatActivity
 
     public String GetSelectedHome() {
         return SELECTED_HOME;
+    }
+
+    /**
+     * Method to check internet connection
+     */
+
+    public static boolean isConnectingToInternet(Context context) {
+
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
     }
 }

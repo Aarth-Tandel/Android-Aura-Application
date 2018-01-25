@@ -16,10 +16,11 @@ import java.util.Set;
 public class DevicesTableDO {
     private String _deviceId;
     private List<String> _loads;
-    private String _master;
+    private Map<String, String> _master;
     private String _room;
-    private List<String> _slave;
+    private Map<String, String> _slave;
     private String _thing;
+    private String _uIUD;
 
     @DynamoDBHashKey(attributeName = "DeviceId")
     @DynamoDBAttribute(attributeName = "DeviceId")
@@ -39,11 +40,11 @@ public class DevicesTableDO {
         this._loads = _loads;
     }
     @DynamoDBAttribute(attributeName = "Master")
-    public String getMaster() {
+    public Map<String, String> getMaster() {
         return _master;
     }
 
-    public void setMaster(final String _master) {
+    public void setMaster(final Map<String, String> _master) {
         this._master = _master;
     }
     @DynamoDBAttribute(attributeName = "Room")
@@ -55,11 +56,11 @@ public class DevicesTableDO {
         this._room = _room;
     }
     @DynamoDBAttribute(attributeName = "Slave")
-    public List<String> getSlave() {
+    public Map<String, String> getSlave() {
         return _slave;
     }
 
-    public void setSlave(final List<String> _slave) {
+    public void setSlave(final Map<String, String> _slave) {
         this._slave = _slave;
     }
     @DynamoDBAttribute(attributeName = "Thing")
@@ -69,6 +70,14 @@ public class DevicesTableDO {
 
     public void setThing(final String _thing) {
         this._thing = _thing;
+    }
+    @DynamoDBAttribute(attributeName = "UIUD")
+    public String getUIUD() {
+        return _uIUD;
+    }
+
+    public void setUIUD(final String _uIUD) {
+        this._uIUD = _uIUD;
     }
 
 }

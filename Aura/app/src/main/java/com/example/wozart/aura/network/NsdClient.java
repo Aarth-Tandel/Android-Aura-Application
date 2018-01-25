@@ -118,10 +118,14 @@ public class NsdClient {
             if (ServicesAvailable.size() == 0)
                 ServicesAvailable.add(serviceInfo);
 
-            for (NsdServiceInfo x : ServicesAvailable) {
-                if (!x.getServiceName().equals(serviceInfo.getServiceName())) {
-                    ServicesAvailable.add(serviceInfo);
+            try {
+                for (NsdServiceInfo x : ServicesAvailable) {
+                    if (!x.getServiceName().equals(serviceInfo.getServiceName())) {
+                        ServicesAvailable.add(serviceInfo);
+                    }
                 }
+            } catch (Exception e){
+                Log.e("NSD Client", "Error: " + e);
             }
         }
     }

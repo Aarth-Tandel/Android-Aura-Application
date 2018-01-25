@@ -46,11 +46,11 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 /**
  * Created by wozart on 02/01/18.
  * Author - Aarth Tandel
- *
+ * <p>
  * RecyclerView for Rooms
  * Publishing data to AWS IOT
  * TCP Server for updating loads
- *
+ * <p>
  * ///////////////////////////////
  * Version - 1.0.0 - Initial built
  * ///////////////////////////////
@@ -99,19 +99,22 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                     // check if item still exists
                     if (pos != RecyclerView.NO_POSITION) {
                         Loads loads = LoadList.get(pos);
+                        //To get the selected device from the
                         mDevice = mDeviceUtils.UpdateSwitchState(loads.getDevice(), loads.getLoadNumber());
 
-                        if (Nsd.GetIP(mDevice.getName()) != null) {
-                            try {
-                                data = serialize.Serialize(mDevice);
-                            } catch (UnknownHostException e) {
-                                e.printStackTrace();
-                            }
-                            new ConnectTask(data, mDeviceUtils.GetIP(loads.getDevice())).execute("");
+                        if (mDevice != null) {
+                            if (Nsd.GetIP(mDevice.getName()) != null) {
+                                try {
+                                    data = serialize.Serialize(mDevice);
+                                } catch (UnknownHostException e) {
+                                    e.printStackTrace();
+                                }
+                                new ConnectTask(data, mDeviceUtils.GetIP(loads.getDevice())).execute("");
 
-                        } else if (isNetworkAvailable()) {
-                            if (mContext instanceof RoomActivity) {
-                                ((RoomActivity) mContext).PusblishDataToShadow(mDevice.getThing(), JsonUtils.SerializeDataToAws(mDevice));
+                            } else if (isNetworkAvailable()) {
+                                if (mContext instanceof RoomActivity) {
+                                    ((RoomActivity) mContext).PusblishDataToShadow(mDevice.getThing(), JsonUtils.SerializeDataToAws(mDevice));
+                                }
                             }
                         } else
                             Toast.makeText(v.getContext(), "Device offline", Toast.LENGTH_SHORT).show();
@@ -189,9 +192,9 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
         load.setState(state[load.getLoadNumber() % 4]);
     }
 
-    public void updateLoadName(String oldName, String newName){
-        for(Loads x : LoadList) {
-            if(x.getName().equals(oldName)){
+    public void updateLoadName(String oldName, String newName) {
+        for (Loads x : LoadList) {
+            if (x.getName().equals(oldName)) {
                 x.setName(newName);
                 notifyItemChanged(x.getPostion(), x);
             }
@@ -296,14 +299,14 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             String shadow = intent.getStringExtra("data");
-            if(shadow != "Connected") {
+            if (shadow != "Connected") {
                 String segments[] = shadow.split("/");
                 String device = db.GetDeviceForThing(mDb, segments[1]);
                 AwsState dummyShadow = JsonUtils.DeserializeAwsData(segments[0]);
                 if (dummyShadow != null) {
                     mDeviceUtils.UpdateSwitchStatesFromShadow(dummyShadow, segments[1], device);
                     updateStates(dummyShadow.getStates(), device);
-                } else if(segments[1] == null){
+                } else if (segments[1] == null) {
                     if (mtoast != null) mtoast = null;
                     Toast.makeText(mContext, "Aura Switch not connected to internet", Toast.LENGTH_SHORT).show();
                 }
@@ -366,10 +369,10 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
             alert.setPositiveButton("Update", new DialogInterface.OnClickListener() {
 
                 public void onClick(DialogInterface dialog, int whichButton) {
-                    if(!input.getText().toString().trim().matches("")){
+                    if (!input.getText().toString().trim().matches("")) {
                         db.updateLoadName(mDb, previousDevice.getName(), MainActivity.SELECTED_HOME, roomSelected, previousDevice.getLoadNumber(), input.getText().toString().trim());
-                        favouriteDb.updateLoadName(mFavouriteDb, previousDevice.getDevice(), previousDevice.getName(), input.getText().toString().trim(),roomSelected, MainActivity.SELECTED_HOME);
-                        updateLoadName(previousDevice.getName(),input.getText().toString().trim());
+                        favouriteDb.updateLoadName(mFavouriteDb, previousDevice.getDevice(), previousDevice.getName(), input.getText().toString().trim(), roomSelected, MainActivity.SELECTED_HOME);
+                        updateLoadName(previousDevice.getName(), input.getText().toString().trim());
                         refreshFavTab(MainActivity.SELECTED_HOME);
                     }
                 }
@@ -384,7 +387,7 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
         }
     }
 
-    private void refreshFavTab(String home){
+    private void refreshFavTab(String home) {
         Intent intent = new Intent("refreshFavTab");
         intent.putExtra("home", home);
         LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);

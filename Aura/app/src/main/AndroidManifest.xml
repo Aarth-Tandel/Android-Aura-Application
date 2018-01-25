@@ -9,7 +9,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/asd"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -62,11 +62,16 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.rooms.RoomActivity"
-            android:parentActivityName=".MainActivity"/>
-        <activity android:name=".activities.customization.CustomizationActivity"
-            android:parentActivityName=".MainActivity">
-        </activity>
+        <activity
+            android:name=".activities.rooms.RoomActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".activities.customization.CustomizationActivity"
+            android:parentActivityName=".MainActivity"></activity>
+        <activity
+            android:name=".activities.sharing.SharingActivity"
+            android:label="@string/title_activity_sharing"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

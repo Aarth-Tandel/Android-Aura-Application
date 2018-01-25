@@ -91,12 +91,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     public CustomizationDeviceAdapter(Context mContext, List<CustomizationDevices> roomsList) {
         this.mContext = mContext;
         this.DeviceList = roomsList;
-    }
-
-    @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.customization_cards, parent, false);
 
         DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
         mDb = dbHelper.getWritableDatabase();
@@ -104,7 +98,12 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         nsdClient = new NsdClient(mContext);
         nsdClient.initializeNsd();
         nsdDiscovery();
+    }
 
+    @Override
+    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.customization_cards, parent, false);
         return new MyViewHolder(itemView);
     }
 
@@ -271,6 +270,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
             JsonUtils mJsonUtils = new JsonUtils();
             final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
+            Log.i(LOG_TAG,"Received Data: " + message[0] );
 
             if (dummyDevice.getType() == 1 && dummyDevice.getCode().equals(Encryption.MAC(mContext))) {
                 for (NsdServiceInfo x : nsdClient.GetAllServices()) {
@@ -308,7 +308,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     private void updateAwsState(AuraSwitch device) {
         for (CustomizationDevices x : DeviceList) {
             if (device.getName().equals(x.getDevice())) {
-                if (device.getError() == 0) x.setAws(1);
+                if (device.getAWSConfiguration() == 1) x.setAws(1);
                 else x.setAws(0);
                 notifyItemChanged(x.getPosition(), x);
             }

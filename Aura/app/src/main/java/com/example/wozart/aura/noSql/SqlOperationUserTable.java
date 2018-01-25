@@ -64,7 +64,7 @@ public class SqlOperationUserTable {
             return true;
     }
 
-    public boolean updateUserDevices(String device){
+    public boolean updateUserDevices(String device) {
         AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
         this.dynamoDBMapper = DynamoDBMapper.builder()
                 .dynamoDBClient(dynamoDBClient)
@@ -72,21 +72,23 @@ public class SqlOperationUserTable {
                 .build();
 
         UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
-        List<String> devices = updateDevice.getDevices();
+        List<String> devices = new ArrayList<>();
+        if (updateDevice.getDevices() != null)
+            devices = updateDevice.getDevices();
         devices.add(device);
         updateDevice.setDevices(devices);
         dynamoDBMapper.save(updateDevice);
         return true;
     }
 
-    public boolean deleteUserDevice(String device){
+    public void deleteUserDevice(String device) {
         AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
         this.dynamoDBMapper = DynamoDBMapper.builder()
                 .dynamoDBClient(dynamoDBClient)
                 .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                 .build();
 
-        String id = Constant.IDENTITY_ID;
+        if(device == null) return;
         UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
         List<String> devices = updateDevice.getDevices();
         for (Iterator<String> iter = devices.listIterator(); iter.hasNext(); ) {
@@ -97,6 +99,6 @@ public class SqlOperationUserTable {
         }
         updateDevice.setDevices(devices);
         dynamoDBMapper.save(updateDevice);
-        return true;
+        return;
     }
 }

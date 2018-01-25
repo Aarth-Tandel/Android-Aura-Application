@@ -19,6 +19,7 @@ import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.
 public class Constant {
     //User's and Device Constants
     public static String IDENTITY_ID;
+    public static String USERNAME = null;
     public static final String CLOSED_CONNECTION = "client_closed_connection";
     public static final String SERVER_NOT_REACHABLE = "Server Not Reachable";
     public static final String UNPAIRED = "00000000000000000";

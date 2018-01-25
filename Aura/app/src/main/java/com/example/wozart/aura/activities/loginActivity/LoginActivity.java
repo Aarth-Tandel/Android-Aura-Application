@@ -86,9 +86,12 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onCompleted(GraphResponse response) {
                         if (response != null) {
+                             String email = null;
                             try {
                                 JSONObject data = response.getJSONObject();
-                                final String email = response.getJSONObject().getString("email");
+                                if(response.getJSONObject().has("email")) {
+                                    email = response.getJSONObject().getString("email");
+                                }
                                 final String firstName = response.getJSONObject().getString("first_name");
                                 final String lastName = response.getJSONObject().getString("last_name");
                                 final String id = response.getJSONObject().getString("id");
