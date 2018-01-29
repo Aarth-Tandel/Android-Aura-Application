@@ -23,8 +23,8 @@ public class DeviceUtils {
                 x.setOnline(1);
                 x.setStates(device.getStates());
                 x.setAWSConfiguration(device.getAWSConfiguration());
+                flag = false;
             }
-            flag = false;
         }
         if (flag) {
             AuraSwitch singleDevice = new AuraSwitch();

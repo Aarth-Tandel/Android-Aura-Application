@@ -7,6 +7,7 @@ import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.aura.utilities.Constant;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class SqlOperationDeviceTable {
         loads.add("LOAD_4");
 
         DevicesTableDO updateDevices = new DevicesTableDO();
-        Map<String, String> updatedName = null;
+        Map<String, String> updatedName = new HashMap<String, String>();
         updatedName.put(Constant.IDENTITY_ID, Constant.USERNAME);
         updateDevices.setMaster(updatedName);
         updateDevices.setDeviceId(device);

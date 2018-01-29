@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -22,7 +23,13 @@ import com.example.wozart.aura.network.TcpServer;
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class SplashActivity extends AppCompatActivity {
+
+    private static final String LOG_TAG = SplashActivity.class.getSimpleName();
 
     private final int SPLASH_DISPLAY_LENGTH = 3000;
     public static PinpointManager pinpointManager;
@@ -39,11 +46,13 @@ public class SplashActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.setStatusBarColor(Color.BLACK);
 
+        if(hasInternetAccess(this)){
+            AWSMobileClient.getInstance().initialize(SplashActivity.this).execute();
+        }
 
         if (isLoggedIn()) {
             startService(new Intent(this, TcpServer.class));
-            if (isConnectingToInternet(this)) {
-                AWSMobileClient.getInstance().initialize(SplashActivity.this).execute();
+            if (hasInternetAccess(this)) {
                 startService(new Intent(this, AwsPubSub.class));
                 awsAnalytics();
             }
@@ -89,6 +98,35 @@ public class SplashActivity extends AppCompatActivity {
     public boolean isLoggedIn() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         return accessToken != null;
+    }
+
+    public boolean hasInternetAccess(Context context) {
+
+        final boolean[] flag = {false};
+        if (isConnectingToInternet(context)) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    HttpURLConnection urlc = (HttpURLConnection)
+                            (new URL("http://clients3.google.com/generate_204")
+                                    .openConnection());
+                    urlc.setRequestProperty("User-Agent", "Android");
+                    urlc.setRequestProperty("Connection", "close");
+                    urlc.setConnectTimeout(1500);
+                    urlc.connect();
+                    if (urlc.getResponseCode() == 204 &&
+                            urlc.getContentLength() == 0) flag[0] = true;
+                } catch (IOException e) {
+                    Log.e(LOG_TAG, "Error checking internet connection", e);
+                }
+            }
+        }).start();
+
+        } else {
+            Log.d(LOG_TAG, "No network available!");
+        }
+        return flag[0];
     }
 
     public static boolean isConnectingToInternet(Context context) {

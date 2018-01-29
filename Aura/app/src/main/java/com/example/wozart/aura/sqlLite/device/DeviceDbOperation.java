@@ -46,6 +46,9 @@ import static com.example.wozart.aura.utilities.Constant.UPDATE_THING_NAME;
  */
 
 public class DeviceDbOperation {
+
+    private static final String LOG_TAG = DeviceDbOperation.class.getSimpleName();
+
     public List<CustomizationDevices> GetAllDevices(SQLiteDatabase db) {
         List<CustomizationDevices> devices = new ArrayList<>();
         Cursor cursor = db.rawQuery(GET_ALL_DEVICES, null);

@@ -68,18 +68,15 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder>{
     public RoomAdapter(Context mContext, List<Rooms> roomsList) {
         this.mContext = mContext;
         this.roomsList = roomsList;
+        DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
+        mDb = dbHelper.getWritableDatabase();
+        db.InsertBasicData(mDb);
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.room_card, parent, false);
-
-        DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
-        mDb = dbHelper.getWritableDatabase();
-        db.InsertBasicData(mDb);
-
-
         return new MyViewHolder(itemView);
     }
 

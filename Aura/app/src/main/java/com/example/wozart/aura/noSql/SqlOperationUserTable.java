@@ -1,5 +1,7 @@
 package com.example.wozart.aura.noSql;
 
+import android.util.Log;
+
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -16,6 +18,8 @@ import java.util.List;
  */
 
 public class SqlOperationUserTable {
+
+    private static final String LOG_TAG = SqlOperationUserTable.class.getSimpleName();
     private DynamoDBMapper dynamoDBMapper;
     SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
 
@@ -51,12 +55,15 @@ public class SqlOperationUserTable {
     }
 
     public boolean isUserAlreadyRegistered(String id) {
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
-
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+        }catch (Exception e){
+            Log.e(LOG_TAG, "Error: " + e);
+        }
         UserTableDO checkUser = dynamoDBMapper.load(UserTableDO.class, id);
         if (checkUser == null)
             return false;

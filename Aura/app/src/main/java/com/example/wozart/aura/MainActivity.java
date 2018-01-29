@@ -66,6 +66,9 @@ import com.example.wozart.aura.utilities.JsonUtils;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -256,7 +259,7 @@ public class MainActivity extends AppCompatActivity
         userNameTextView.setText(userName);
         userEmailTextView.setText(email);
 
-        if(isConnectingToInternet(this)) {
+        if(hasInternetAccess(this)) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -757,6 +760,35 @@ public class MainActivity extends AppCompatActivity
     /**
      * Method to check internet connection
      */
+
+    public boolean hasInternetAccess(Context context) {
+
+        final boolean[] flag = {false};
+        if (isConnectingToInternet(context)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        HttpURLConnection urlc = (HttpURLConnection)
+                                (new URL("http://clients3.google.com/generate_204")
+                                        .openConnection());
+                        urlc.setRequestProperty("User-Agent", "Android");
+                        urlc.setRequestProperty("Connection", "close");
+                        urlc.setConnectTimeout(1500);
+                        urlc.connect();
+                        if (urlc.getResponseCode() == 204 &&
+                                urlc.getContentLength() == 0) flag[0] = true;
+                    } catch (IOException e) {
+                        Log.e(LOG_TAG, "Error checking internet connection", e);
+                    }
+                }
+            }).start();
+
+        } else {
+            Log.d(LOG_TAG, "No network available!");
+        }
+        return flag[0];
+    }
 
     public static boolean isConnectingToInternet(Context context) {
 
