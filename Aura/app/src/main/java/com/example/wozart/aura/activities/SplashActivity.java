@@ -1,14 +1,10 @@
 package com.example.wozart.aura.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -31,7 +27,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SplashActivity.class.getSimpleName();
 
-    private final int SPLASH_DISPLAY_LENGTH = 3000;
+    private final int SPLASH_DISPLAY_LENGTH = 2000;
     public static PinpointManager pinpointManager;
 
     @Override
@@ -46,17 +42,23 @@ public class SplashActivity extends AppCompatActivity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.setStatusBarColor(Color.BLACK);
 
-        if(hasInternetAccess(this)){
-            AWSMobileClient.getInstance().initialize(SplashActivity.this).execute();
-        }
-
         if (isLoggedIn()) {
             startService(new Intent(this, TcpServer.class));
-            if (hasInternetAccess(this)) {
-                startService(new Intent(this, AwsPubSub.class));
-                awsAnalytics();
-            }
-
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (isInternetWorking()) {
+                        try {
+                            AWSMobileClient.getInstance().initialize(SplashActivity.this).execute();
+                            Thread.sleep(1000);
+                            startService(new Intent(SplashActivity.this, AwsPubSub.class));
+                            awsAnalytics();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }).start();
         }
 
         new Handler().postDelayed(new Runnable() {
@@ -73,6 +75,7 @@ public class SplashActivity extends AppCompatActivity {
                 }
             }
         }, SPLASH_DISPLAY_LENGTH);
+
     }
 
     /**
@@ -100,43 +103,18 @@ public class SplashActivity extends AppCompatActivity {
         return accessToken != null;
     }
 
-    public boolean hasInternetAccess(Context context) {
-
-        final boolean[] flag = {false};
-        if (isConnectingToInternet(context)) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpURLConnection urlc = (HttpURLConnection)
-                            (new URL("http://clients3.google.com/generate_204")
-                                    .openConnection());
-                    urlc.setRequestProperty("User-Agent", "Android");
-                    urlc.setRequestProperty("Connection", "close");
-                    urlc.setConnectTimeout(1500);
-                    urlc.connect();
-                    if (urlc.getResponseCode() == 204 &&
-                            urlc.getContentLength() == 0) flag[0] = true;
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "Error checking internet connection", e);
-                }
-            }
-        }).start();
-
-        } else {
-            Log.d(LOG_TAG, "No network available!");
+    public boolean isInternetWorking() {
+        boolean success = false;
+        try {
+            URL url = new URL("https://google.com");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(10000);
+            connection.connect();
+            success = connection.getResponseCode() == 200;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return flag[0];
+        return success;
     }
 
-    public static boolean isConnectingToInternet(Context context) {
-
-        ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
-        return activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-    }
 }

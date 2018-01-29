@@ -60,4 +60,21 @@ public class SqlOperationThingTable {
         Log.d(LOG_TAG, "Availability changed ");
     }
 
+    public ThingTableDO thingDetails(String thing){
+        ThingTableDO thingTableDO = new ThingTableDO();
+        try{
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+
+            thingTableDO = dynamoDBMapper.load(ThingTableDO.class, thing);
+        } catch (Exception e){
+            Log.e(LOG_TAG, "Error : " + e);
+            return null;
+        }
+        return thingTableDO;
+    }
+
 }

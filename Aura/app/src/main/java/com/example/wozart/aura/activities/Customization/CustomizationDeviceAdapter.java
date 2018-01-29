@@ -177,20 +177,40 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
      */
     private void getKeys(final String device) {
         new ConnectTask("{\"type\":8, \"set\":1}", mDeviceUtils.GetIP(device)).execute("");
-        final SqlOperationThingTable keysAvailable = new SqlOperationThingTable();
+        final SqlOperationThingTable thingInfo = new SqlOperationThingTable();
+        final ThingTableDO[] KeysAndCertificates = {new ThingTableDO()};
         Runnable runnable = new Runnable() {
             public void run() {
-                KeysAndCertificates = keysAvailable.searchAvailableDevices();
-                KeysAndCertificates.getThing();
-                sendCertificate(device);
-                sendKeys(device);
+                sqlOperationUserTable.updateUserDevices(device);
+                sqlOperationDeviceTable.newUserDevice(device, db.GetDeviceRoom(mDb, device));
+                try {
+                    Thread.sleep(3000);
+                    String thing = sqlOperationDeviceTable.getThingForDevice(device);
+                    deviceDbOperation.updateThing(mDb, device, thing);
+                    KeysAndCertificates[0] = thingInfo.thingDetails(thing);
+                    sendCertificate(device, KeysAndCertificates[0]);
+                    Thread.sleep(1000);
+                    sendKeys(device, KeysAndCertificates[0]);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         };
         Thread getAvailableDevices = new Thread(runnable);
         getAvailableDevices.start();
+//        Runnable runnable = new Runnable() {
+//            public void run() {
+//                KeysAndCertificates = keysAvailable.searchAvailableDevices();
+//                KeysAndCertificates.getThing();
+//                sendCertificate(device);
+//                sendKeys(device);
+//            }
+//        };
+//        Thread getAvailableDevices = new Thread(runnable);
+//        getAvailableDevices.start();
     }
 
-    private void sendCertificate(final String device) {
+    private void sendCertificate(final String device, final ThingTableDO KeysAndCertificates) {
         final JsonUtils jsonUtils = new JsonUtils();
         final String[] nameRegion = {null};
         Runnable runnable = new Runnable() {
@@ -206,7 +226,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         sendCertificates.start();
     }
 
-    private void sendKeys(final String device) {
+    private void sendKeys(final String device,final ThingTableDO KeysAndCertificates) {
         final JsonUtils jsonUtils = new JsonUtils();
         final String[] nameRegion = {null};
         Runnable runnable = new Runnable() {
@@ -283,20 +303,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             }
 
             if (dummyDevice.getType() == 8 && dummyDevice.getError() == 0) {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        sqlOperationUserTable.updateUserDevices(dummyDevice.getName());
-                        sqlOperationDeviceTable.newUserDevice(dummyDevice.getName(), db.GetDeviceRoom(mDb, dummyDevice.getName()));
-                        try {
-                            Thread.sleep(3000);
-                            deviceDbOperation.updateThing(mDb, dummyDevice.getName(), sqlOperationDeviceTable.getThingForDevice(dummyDevice.getName()));
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-                Thread getAvailableDevices = new Thread(runnable);
-                getAvailableDevices.start();
                 Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
                 updateAwsState(dummyDevice);
             } else if (dummyDevice.getType() == 8 && dummyDevice.getError() == 1) {

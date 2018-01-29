@@ -12,8 +12,6 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiConfiguration;
@@ -247,7 +245,7 @@ public class MainActivity extends AppCompatActivity
         if (!userId.equals("NULL"))
             Constant.IDENTITY_ID = userId;
 
-        if(!userName.equals("defaultStringIfNothingFound"))
+        if (!userName.equals("defaultStringIfNothingFound"))
             Constant.USERNAME = userName;
 
         if (!userProfilePicture.equalsIgnoreCase("")) {
@@ -259,10 +257,10 @@ public class MainActivity extends AppCompatActivity
         userNameTextView.setText(userName);
         userEmailTextView.setText(email);
 
-        if(hasInternetAccess(this)) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (isInternetWorking()) {
                     if (!userId.equals("NULL")) {
                         if (!sqlOperationUserTable.isUserAlreadyRegistered(userId)) {
                             sqlOperationUserTable.insertUser(userId);
@@ -272,8 +270,8 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 }
-            }).start();
-        }
+            }
+        }).start();
     }
 
     @Override
@@ -761,43 +759,18 @@ public class MainActivity extends AppCompatActivity
      * Method to check internet connection
      */
 
-    public boolean hasInternetAccess(Context context) {
 
-        final boolean[] flag = {false};
-        if (isConnectingToInternet(context)) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        HttpURLConnection urlc = (HttpURLConnection)
-                                (new URL("http://clients3.google.com/generate_204")
-                                        .openConnection());
-                        urlc.setRequestProperty("User-Agent", "Android");
-                        urlc.setRequestProperty("Connection", "close");
-                        urlc.setConnectTimeout(1500);
-                        urlc.connect();
-                        if (urlc.getResponseCode() == 204 &&
-                                urlc.getContentLength() == 0) flag[0] = true;
-                    } catch (IOException e) {
-                        Log.e(LOG_TAG, "Error checking internet connection", e);
-                    }
-                }
-            }).start();
-
-        } else {
-            Log.d(LOG_TAG, "No network available!");
+    public boolean isInternetWorking() {
+        boolean success = false;
+        try {
+            URL url = new URL("https://google.com");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(10000);
+            connection.connect();
+            success = connection.getResponseCode() == 200;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return flag[0];
-    }
-
-    public static boolean isConnectingToInternet(Context context) {
-
-        ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
-        return activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
+        return success;
     }
 }
