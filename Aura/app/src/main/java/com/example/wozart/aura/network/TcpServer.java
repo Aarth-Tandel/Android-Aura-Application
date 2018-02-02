@@ -16,9 +16,19 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : TcpServer
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : TCP server to listen to messages from Aura device
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class TcpServer extends Service {
     private static String TAG = "TcpServer";

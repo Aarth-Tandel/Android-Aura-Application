@@ -5,22 +5,35 @@ import com.example.wozart.aura.model.AwsState;
 
 import java.util.ArrayList;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : MainActivity
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Handles device and state management of different aura switches
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * 31/01/18  Aarth Tandel - Device id added for AWS and Security
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * 31/01/18 Version 1.1
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class DeviceUtils {
     private static ArrayList<AuraSwitch> AuraFourNodeDevice = new ArrayList<>();
     public static final String TAG = "DeviceUtils";
 
-    public void RegisterDevice(AuraSwitch device, String ip) {
+    public void RegisterDevice(AuraSwitch device, String ip, String uiud) {
         Boolean flag = true;
         for (AuraSwitch x : AuraFourNodeDevice) {
             if (x.getName().equals(device.getName())) {
                 x.setIP(ip);
                 x.setType(device.getType());
-                x.setCode(device.getCode());
+                x.setUiud(device.getUiud());
                 x.setOnline(1);
+                x.setId(device.getId());
                 x.setStates(device.getStates());
                 x.setAWSConfiguration(device.getAWSConfiguration());
                 flag = false;
@@ -31,8 +44,9 @@ public class DeviceUtils {
             singleDevice.setName(device.getName());
             singleDevice.setIP(ip);
             singleDevice.setType(device.getType());
-            singleDevice.setCode(device.getCode());
+            singleDevice.setUiud(device.getUiud());
             singleDevice.setOnline(1);
+            singleDevice.setId(device.getId());
             singleDevice.setStates(device.getStates());
             singleDevice.setAWSConfiguration(device.getAWSConfiguration());
             AuraFourNodeDevice.add(singleDevice);
@@ -71,7 +85,7 @@ public class DeviceUtils {
     public void UpdatePairingData(String deviceName, String code) {
         for (AuraSwitch c : AuraFourNodeDevice) {
             if (c.getName().contains(deviceName)) {
-                c.setCode(code);
+                c.setUiud(code);
             }
         }
     }
@@ -144,7 +158,7 @@ public class DeviceUtils {
         String code = null;
         for (AuraSwitch c : AuraFourNodeDevice) {
             if (deviceName.equals(c.getName())) {
-                code = c.getCode();
+                code = c.getUiud();
             }
         }
         return code;

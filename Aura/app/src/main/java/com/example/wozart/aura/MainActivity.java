@@ -49,11 +49,11 @@ import android.widget.Toast;
 
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.aura.activities.customization.CustomizationActivity;
-import com.example.wozart.aura.activities.sharing.SharingActivity;
 import com.example.wozart.aura.model.AuraSwitch;
 import com.example.wozart.aura.network.AwsPubSub;
 import com.example.wozart.aura.network.NsdClient;
 import com.example.wozart.aura.network.TcpClient;
+import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
 import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
 import com.example.wozart.aura.sqlLite.device.DeviceDbOperation;
@@ -74,6 +74,21 @@ import java.util.ArrayList;
 import static com.example.wozart.aura.utilities.Constant.MAX_HOME;
 import static com.example.wozart.aura.utilities.Constant.NETWORK_SSID;
 
+/***************************************************************************
+ * File Name : MainActivity
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Dashboard and the main screen of the application. Contains
+ *               3 parts, Home, Scenes and favourites
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -92,6 +107,7 @@ public class MainActivity extends AppCompatActivity
     private static String ADD_NEW_DEVICE_TO = null;
     private AwsPubSub awsPubSub;
     boolean mBounded;
+    private static String UIUD;
 
     private DeviceDbOperation db = new DeviceDbOperation();
     private SQLiteDatabase mDb;
@@ -157,9 +173,8 @@ public class MainActivity extends AppCompatActivity
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
-
                     new ConnectTask(data, service.getHost().getHostAddress()).execute("");
-                    Log.d(LOG_TAG, "Initial data: " + data + " to " + service.getServiceName());
+                    Log.d(LOG_TAG, "Initial data: " + data + " to " + service.getServiceName() + "IP: " + service.getHost().getHostAddress());
                 }
             }
         }, 1000);
@@ -379,9 +394,6 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
 
         } else if (id == R.id.nav_share) {
-            Intent intent = new Intent(this, SharingActivity.class);
-            startActivity(intent);
-
         } else if (id == R.id.nav_send) {
 
         }
@@ -489,8 +501,8 @@ public class MainActivity extends AppCompatActivity
                 if (input.length() == 8) {
                     try {
                         String encryptedPin = Encryption.SHA256(input.getText().toString());
-                        String Mac = Encryption.MAC(MainActivity.this);
-                        String data = JsonUtils.PairingData(Mac, encryptedPin);
+                        UIUD = Encryption.generateUIUD(deviceToPair);
+                        String data = JsonUtils.PairingData(UIUD, encryptedPin);
                         new ConnectTask(data, deviceToPair.getIP()).execute("");
                     } catch (NoSuchAlgorithmException e) {
                         Log.e(LOG_TAG, "Failed Pairing: " + e);
@@ -658,13 +670,13 @@ public class MainActivity extends AppCompatActivity
                 JsonUtils mJsonUtils = new JsonUtils();
                 AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
 
-                if (dummyDevice.getType() == 1 && dummyDevice.getCode().equals(Constant.UNPAIRED)) {
+                if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(Constant.UNPAIRED)) {
                     dummyDevice.setIP(Nsd.GetIP(dummyDevice.getName()));
                     Snackbar.make(findViewById(R.id.mCordinateLayout), "New device " + dummyDevice.getName(), Snackbar.LENGTH_INDEFINITE)
                             .setAction("ADD", new ConfigureListener(dummyDevice)).show();
                 }
 
-                if (dummyDevice.getCode().equals(Encryption.MAC(MainActivity.this)) && dummyDevice.getType() == 2) {
+                if (dummyDevice.getUiud().equals(UIUD) && dummyDevice.getType() == 2) {
                     if (mtoast != null)
                         mtoast = null;
                     Context context = getApplicationContext();
@@ -672,14 +684,21 @@ public class MainActivity extends AppCompatActivity
                     int duration = Toast.LENGTH_SHORT;
                     mtoast = Toast.makeText(context, text, duration);
                     mtoast.show();
-                    db.AddDevice(mDb, ADD_NEW_DEVICE_TO, SELECTED_HOME, dummyDevice.getName());
-                }
 
-                if (dummyDevice.getType() == 1 && dummyDevice.getCode().equals(Encryption.MAC(MainActivity.this))) {
+                    db.AddDevice(mDb, ADD_NEW_DEVICE_TO, SELECTED_HOME, dummyDevice.getName(), UIUD, null);
                     for (NsdServiceInfo x : Nsd.GetAllServices()) {
                         //Find the match in services found and data received
                         if (x.getServiceName().contains(dummyDevice.getName())) {
-                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress());
+                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), UIUD);
+                        }
+                    }
+                }
+
+                if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName()))) {
+                    for (NsdServiceInfo x : Nsd.GetAllServices()) {
+                        //Find the match in services found and data received
+                        if (x.getServiceName().contains(dummyDevice.getName())) {
+                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), DeviceDbOperation.getUiud(mDb, dummyDevice.getName()));
                         }
                     }
                 }

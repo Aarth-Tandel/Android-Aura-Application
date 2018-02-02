@@ -13,9 +13,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by wozart on 28/12/17.
- */
+/***************************************************************************
+ * File Name : SqlOperationUserTable
+ * Author : Aarth Tandel
+ * Date of Creation : 28/12/17
+ * Description : Sql operation for UserTable DynamoDB
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
+
 
 public class SqlOperationUserTable {
 
@@ -23,34 +34,45 @@ public class SqlOperationUserTable {
     private DynamoDBMapper dynamoDBMapper;
     SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
 
-    public ArrayList<DevicesTableDO> getUserDevices(final String userId) {
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
 
-        UserTableDO userTableDO = dynamoDBMapper.load(UserTableDO.class, userId);
-        ArrayList<DevicesTableDO> devices = sqlOperationDeviceTable.userDevices(userTableDO.getDevices());
-        return devices;
+    public ArrayList<DevicesTableDO> getUserDevices(final String userId) {
+
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+
+            UserTableDO userTableDO = dynamoDBMapper.load(UserTableDO.class, userId);
+            ArrayList<DevicesTableDO> devices = sqlOperationDeviceTable.userDevices(userTableDO.getDevices());
+            return devices;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error : " + e);
+            return null;
+        }
     }
 
     public void insertUser(final String userId) {
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
 
-        final UserTableDO userTableDO = new UserTableDO();
-        userTableDO.setUserId(userId);
+            final UserTableDO userTableDO = new UserTableDO();
+            userTableDO.setUserId(userId);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                dynamoDBMapper.save(userTableDO);
-            }
-        }).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    dynamoDBMapper.save(userTableDO);
+                }
+            }).start();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error : " + e);
+        }
 
     }
 
@@ -61,51 +83,62 @@ public class SqlOperationUserTable {
                     .dynamoDBClient(dynamoDBClient)
                     .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                     .build();
-        }catch (Exception e){
+            UserTableDO checkUser = dynamoDBMapper.load(UserTableDO.class, id);
+            if (checkUser == null)
+                return false;
+            else
+                return true;
+        } catch (Exception e) {
             Log.e(LOG_TAG, "Error: " + e);
-        }
-        UserTableDO checkUser = dynamoDBMapper.load(UserTableDO.class, id);
-        if (checkUser == null)
             return false;
-        else
-            return true;
+        }
+
     }
 
     public boolean updateUserDevices(String device) {
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
 
-        UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
-        List<String> devices = new ArrayList<>();
-        if (updateDevice.getDevices() != null)
-            devices = updateDevice.getDevices();
-        devices.add(device);
-        updateDevice.setDevices(devices);
-        dynamoDBMapper.save(updateDevice);
-        return true;
+            UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
+            List<String> devices = new ArrayList<>();
+            if (updateDevice.getDevices() != null)
+                devices = updateDevice.getDevices();
+            devices.add(device);
+            updateDevice.setDevices(devices);
+            dynamoDBMapper.save(updateDevice);
+            return true;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error: " + e);
+            return false;
+        }
     }
 
     public void deleteUserDevice(String device) {
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
 
-        if(device == null) return;
-        UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
-        List<String> devices = updateDevice.getDevices();
-        for (Iterator<String> iter = devices.listIterator(); iter.hasNext(); ) {
-            String a = iter.next();
-            if (a.equals(device)) {
-                iter.remove();
+            if (device == null) return;
+            UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
+            List<String> devices = updateDevice.getDevices();
+            for (Iterator<String> iter = devices.listIterator(); iter.hasNext(); ) {
+                String a = iter.next();
+                if (a.equals(device)) {
+                    iter.remove();
+                }
             }
+            updateDevice.setDevices(devices);
+            dynamoDBMapper.save(updateDevice);
+            return;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error: " + e);
         }
-        updateDevice.setDevices(devices);
-        dynamoDBMapper.save(updateDevice);
-        return;
     }
 }

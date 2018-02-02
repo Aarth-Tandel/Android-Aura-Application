@@ -13,9 +13,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by wozart on 04/01/18.
- */
+/***************************************************************************
+ * File Name : SqlOperationThingTable
+ * Author : Aarth Tandel
+ * Date of Creation : 04/01/18
+ * Description : Sql operation for ThingTable DynamoDB
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class SqlOperationThingTable {
 
@@ -23,11 +33,16 @@ public class SqlOperationThingTable {
     private DynamoDBMapper dynamoDBMapper;
 
     public ThingTableDO searchAvailableDevices(){
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
+
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+        } catch ( Exception e){
+            Log.e(LOG_TAG, "Error : " + e);
+        }
 
         ThingTableDO availableDevice;
         Map<String, AttributeValue> availableThings = new HashMap<>();
@@ -48,11 +63,16 @@ public class SqlOperationThingTable {
     }
 
     public void updateAvailability(String device){
-        AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-        this.dynamoDBMapper = DynamoDBMapper.builder()
-                .dynamoDBClient(dynamoDBClient)
-                .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                .build();
+
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+        } catch (Exception e){
+            Log.e(LOG_TAG, "Error : " + e);
+        }
 
         ThingTableDO changeAvailability = dynamoDBMapper.load(ThingTableDO.class, device);
         changeAvailability.setAvailable(0.0);

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.aura.activities.customization.CustomizationDevices;
@@ -20,6 +21,7 @@ import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.ROOM_NAME;
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.TABLE_NAME;
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.THING_NAME;
+import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.UIUD;
 import static com.example.wozart.aura.utilities.Constant.CHECK_DEVICES;
 import static com.example.wozart.aura.utilities.Constant.CRUD_ROOM;
 import static com.example.wozart.aura.utilities.Constant.DELETE_DEVICE;
@@ -31,6 +33,7 @@ import static com.example.wozart.aura.utilities.Constant.GET_LOADS;
 import static com.example.wozart.aura.utilities.Constant.GET_ROOMS;
 import static com.example.wozart.aura.utilities.Constant.GET_ROOM_FOR_DEVICE;
 import static com.example.wozart.aura.utilities.Constant.GET_THING_NAME;
+import static com.example.wozart.aura.utilities.Constant.GET_UIUD;
 import static com.example.wozart.aura.utilities.Constant.INSERT_DEVICES;
 import static com.example.wozart.aura.utilities.Constant.INSERT_INITIAL_DATA;
 import static com.example.wozart.aura.utilities.Constant.INSERT_ROOMS;
@@ -41,9 +44,18 @@ import static com.example.wozart.aura.utilities.Constant.UPDATE_LOAD3_NAME;
 import static com.example.wozart.aura.utilities.Constant.UPDATE_LOAD4_NAME;
 import static com.example.wozart.aura.utilities.Constant.UPDATE_THING_NAME;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : DeviceDbOperations
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class DeviceDbOperation {
 
@@ -192,7 +204,7 @@ public class DeviceDbOperation {
         return loads;
     }
 
-    public void AddDevice(SQLiteDatabase db, String room, String home, String device) {
+    public void AddDevice(SQLiteDatabase db, String room, String home, String device, String uiud, String thing) {
 
         ArrayList<String> devicesDuplicate = new ArrayList<>();
         Cursor cursor = db.rawQuery(INSERT_DEVICES, null);
@@ -208,6 +220,8 @@ public class DeviceDbOperation {
             cv.put(ROOM_NAME, room);
             cv.put(HOME_NAME, home);
             cv.put(DEVICE_NAME, device);
+            cv.put(UIUD, uiud);
+            cv.put(THING_NAME, thing);
 
             try {
                 db.beginTransaction();
@@ -233,6 +247,8 @@ public class DeviceDbOperation {
             cv.put(ROOM_NAME, room);
             cv.put(HOME_NAME, home);
             cv.put(DEVICE_NAME, device);
+            cv.put(UIUD, uiud);
+            cv.put(THING_NAME,thing);
 
             try {
                 db.beginTransaction();
@@ -250,8 +266,11 @@ public class DeviceDbOperation {
 
     public void devicesFromAws(SQLiteDatabase db, ArrayList<DevicesTableDO> devices) {
 
-        if (devices == null) return;
-
+        if(devices == null) return;
+        if (devices.get(0) == null) {
+            Log.i(LOG_TAG, "No AWS devices");
+            return;
+        }
         for (DevicesTableDO x : devices) {
             boolean isThingAlreadyPresent;
             isThingAlreadyPresent = checkDevice(db, x.getDeviceId());
@@ -259,7 +278,7 @@ public class DeviceDbOperation {
                 return;
             } else {
                 ContentValues value = new ContentValues();
-                value.put(ROOM_NAME, x.getRoom());
+                value.put(ROOM_NAME, "Hall");
                 value.put(THING_NAME, x.getThing());
                 value.put(DEVICE_NAME, x.getDeviceId());
                 value.put(HOME_NAME, "Home");
@@ -357,6 +376,17 @@ public class DeviceDbOperation {
     public void removeDevice(SQLiteDatabase db, String device){
         String[] params = new String[]{device};
         db.delete(TABLE_NAME, DELETE_DEVICE, params);
+    }
+
+    public static String getUiud(SQLiteDatabase db, String device){
+        String[] params = new String[]{device};
+        Cursor cursor = db.rawQuery(GET_UIUD, params);
+        String uiud = null;
+        while (cursor.moveToNext()) {
+            uiud = cursor.getString(0);
+        }
+        cursor.close();
+        return uiud;
     }
 
 }

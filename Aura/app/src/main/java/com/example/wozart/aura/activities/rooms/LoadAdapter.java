@@ -43,18 +43,19 @@ import java.util.List;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-/**
- * Created by wozart on 02/01/18.
- * Author - Aarth Tandel
- * <p>
- * RecyclerView for Rooms
- * Publishing data to AWS IOT
- * TCP Server for updating loads
- * <p>
- * ///////////////////////////////
- * Version - 1.0.0 - Initial built
- * ///////////////////////////////
- */
+/***************************************************************************
+ * File Name : LoadAdapter
+ * Author : Aarth Tandel
+ * Date of Creation : 02/01/18
+ * Description : Recycles cards for Room with edit and remove option
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> {
     private Context mContext;

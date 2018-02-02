@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -60,8 +61,14 @@ public class HomeTab extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                ((MainActivity)getActivity()).nsdDiscovery();
-                mSwipeRefreshLayout.setRefreshing(false);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((MainActivity) getActivity()).nsdDiscovery();
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 1000);
+
             }
         });
 
@@ -76,6 +83,7 @@ public class HomeTab extends Fragment {
 
         return rootView;
     }
+
 
     /**
      * Adding few albums for testing

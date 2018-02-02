@@ -12,6 +12,7 @@
     <string name="action_edit">Edit</string>
     <string name="action_remove">Remove</string>
     <string name="action_add_favourite">Add to Favourite</string>
+    <string name="action_share_device">Share</string>
 
     <!--Facebook Application-->
     <string name="facebook_app_id">160586947836430</string>

@@ -1,8 +1,18 @@
 package com.example.wozart.aura.activities.customization;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : CustomizationDevices
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Data model for CustomizationActivity
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class CustomizationDevices {
     private String home;

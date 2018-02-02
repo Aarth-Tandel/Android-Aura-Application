@@ -2,9 +2,21 @@ package com.example.wozart.aura.model;
 
 import com.example.wozart.aura.utilities.Constant;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : AuraSwitch
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Data model for Aura Switch mini
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * 31/01/18  Aarth Tandel - Set id for table
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * 31/01/18 Version 1.1
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class AuraSwitch {
     private int type = 1;
@@ -15,11 +27,12 @@ public class AuraSwitch {
     private double version = 0.0;
     private int nodes = 4;
     private String ip;
-    private String code = Constant.UNPAIRED;
+    private String uiud = Constant.UNPAIRED;
     private int aws = 0;
     private int error = 1;
     private int online = 0;
     private int led = 0;
+    private String id = null;
 
     public AuraSwitch() {
 
@@ -61,8 +74,8 @@ public class AuraSwitch {
         return ip;
     }
 
-    public String getCode() {
-        return code;
+    public String getUiud() {
+        return uiud;
     }
 
     public int getAWSConfiguration() {
@@ -120,8 +133,8 @@ public class AuraSwitch {
         this.ip = ip;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setUiud(String code) {
+        this.uiud = code;
     }
 
     public void setAWSConfiguration(int aws) {
@@ -143,4 +156,8 @@ public class AuraSwitch {
     public void setLed(int led) {
         this.led = led;
     }
+
+    public String getId() {return id;}
+
+    public void setId(String id) {this.id = id;}
 }

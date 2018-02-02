@@ -4,9 +4,12 @@ import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
+import com.example.wozart.aura.model.AuraSwitch;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 /**
  * Created by wozart on 29/12/17.
@@ -28,5 +31,17 @@ public class Encryption {
         WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         WifiInfo wInfo = wifiManager.getConnectionInfo();
         return wInfo.getMacAddress();
+    }
+
+    public static String generateUIUD(AuraSwitch device) {
+        Random rand = new Random();
+        int uiudNumbers = rand.nextInt(100000);
+        String uiudString = String.valueOf(uiudNumbers);
+        if (uiudString.length() == 1) uiudString += "0000";
+        if (uiudString.length() == 2) uiudString += "000";
+        if (uiudString.length() == 3) uiudString += "00";
+        if (uiudString.length() == 4) uiudString += "0";
+        String uiud = device.getId() + uiudString;
+        return uiud;
     }
 }

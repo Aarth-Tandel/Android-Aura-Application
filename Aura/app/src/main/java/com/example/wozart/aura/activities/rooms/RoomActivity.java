@@ -40,6 +40,20 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+/***************************************************************************
+ * File Name : RoomActivity
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Handles device and state management of different aura switches
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
+
 public class RoomActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = RoomActivity.class.getSimpleName();
@@ -185,11 +199,11 @@ public class RoomActivity extends AppCompatActivity {
                 AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
                 DeviceUtils mDeviceUtils = new DeviceUtils();
 
-                if (dummyDevice.getType() == 1 && dummyDevice.getCode().equals(Encryption.MAC(RoomActivity.this))) {
+                if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb,dummyDevice.getName()))) {
                     for (NsdServiceInfo x : Nsd.GetAllServices()) {
                         //Find the match in services found and data received
                         if (x.getServiceName().contains(dummyDevice.getName())) {
-                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress());
+                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), dummyDevice.getUiud());
                         }
                     }
                 }

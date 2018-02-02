@@ -28,7 +28,8 @@ public class DeviceDbHelper extends SQLiteOpenHelper {
                 DeviceContract.DeviceEntry.LOAD_4 + " TEXT DEFAULT 'Load 4', " +
                 DeviceContract.DeviceEntry.HOME_NAME + " TEXT, " +
                 DeviceContract.DeviceEntry.ROOM_NAME + " TEXT DEFAULT 'Hall', " +
-                DeviceContract.DeviceEntry.THING_NAME + " TEXT" +
+                DeviceContract.DeviceEntry.THING_NAME + " TEXT, " +
+                DeviceContract.DeviceEntry.UIUD + " TEXT" +
                 ");";
 
         sqLiteDatabase.execSQL(SQL_CREATE_DEVICE_TABLE);

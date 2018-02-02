@@ -31,9 +31,19 @@ import static com.example.wozart.aura.utilities.Constant.AWS_GET_ACCEPTED;
 import static com.example.wozart.aura.utilities.Constant.AWS_UPDATE;
 import static com.example.wozart.aura.utilities.Constant.AWS_UPDATE_ACCEPTED;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : AwsPubSub
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Connect, Post and GEt to AWS IOT
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class AwsPubSub extends Service {
 

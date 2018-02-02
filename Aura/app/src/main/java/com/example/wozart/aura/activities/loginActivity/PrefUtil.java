@@ -5,9 +5,19 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-/**
- * Created by wozart on 03/01/18.
- */
+/***************************************************************************
+ * File Name : MainActivity
+ * Author : Aarth Tandel
+ * Date of Creation : 03/01/18
+ * Description : utility function to save in shared preferences
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class PrefUtil {
     private Activity activity;

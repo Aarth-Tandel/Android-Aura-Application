@@ -137,8 +137,8 @@ public class JsonUtils {
         }
     }
 
-    public static String PairingData(String mac, String pin) {
-        String data = "{\"type\":2,\"hash\":\"" + pin + "\",\"mac\":\"" + mac + "\"}";
+    public static String PairingData(String uiud, String pin) {
+        String data = "{\"type\":2,\"hash\":\"" + pin + "\",\"uiud\":\"" + uiud + "\"}";
         return data;
     }
 

@@ -1,8 +1,18 @@
 package com.example.wozart.aura.activities.rooms;
 
-/**
- * Created by wozart on 02/01/18.
- */
+/***************************************************************************
+ * File Name : Loads
+ * Author : Aarth Tandel
+ * Date of Creation : 02/01/18
+ * Description : Data model for load cards and LoadAdapter
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class Loads {
     private String name;

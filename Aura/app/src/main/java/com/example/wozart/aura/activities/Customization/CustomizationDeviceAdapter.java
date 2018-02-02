@@ -3,9 +3,8 @@ package com.example.wozart.aura.activities.customization;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -37,10 +36,14 @@ import com.example.wozart.aura.noSql.SqlOperationThingTable;
 import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
 import com.example.wozart.aura.sqlLite.device.DeviceDbOperation;
+import com.example.wozart.aura.utilities.Constant;
 import com.example.wozart.aura.utilities.DeviceUtils;
 import com.example.wozart.aura.utilities.Encryption;
 import com.example.wozart.aura.utilities.JsonUtils;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +51,21 @@ import java.util.List;
 import static com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : CustomizationDeviceAdapter
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Loads each device into appropriate card view
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * 30/01/18  Aarth Tandel - Sharing device
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * 30/01/18 Version 1.1
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class CustomizationDeviceAdapter extends RecyclerView.Adapter<CustomizationDeviceAdapter.MyViewHolder> {
     private static final String LOG_TAG = CustomizationActivity.class.getSimpleName();
@@ -181,12 +196,13 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         final ThingTableDO[] KeysAndCertificates = {new ThingTableDO()};
         Runnable runnable = new Runnable() {
             public void run() {
+                String uiud = DeviceDbOperation.getUiud(mDb,device);
+                String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
                 sqlOperationUserTable.updateUserDevices(device);
-                sqlOperationDeviceTable.newUserDevice(device, db.GetDeviceRoom(mDb, device));
+                sqlOperationDeviceTable.newUserDevice(deviceId,uiud);
                 try {
                     Thread.sleep(3000);
-                    String thing = sqlOperationDeviceTable.getThingForDevice(device);
-                    deviceDbOperation.updateThing(mDb, device, thing);
+                    String thing = sqlOperationDeviceTable.getThingForDevice(deviceId);
                     KeysAndCertificates[0] = thingInfo.thingDetails(thing);
                     sendCertificate(device, KeysAndCertificates[0]);
                     Thread.sleep(1000);
@@ -198,16 +214,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         };
         Thread getAvailableDevices = new Thread(runnable);
         getAvailableDevices.start();
-//        Runnable runnable = new Runnable() {
-//            public void run() {
-//                KeysAndCertificates = keysAvailable.searchAvailableDevices();
-//                KeysAndCertificates.getThing();
-//                sendCertificate(device);
-//                sendKeys(device);
-//            }
-//        };
-//        Thread getAvailableDevices = new Thread(runnable);
-//        getAvailableDevices.start();
     }
 
     private void sendCertificate(final String device, final ThingTableDO KeysAndCertificates) {
@@ -226,7 +232,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         sendCertificates.start();
     }
 
-    private void sendKeys(final String device,final ThingTableDO KeysAndCertificates) {
+    private void sendKeys(final String device, final ThingTableDO KeysAndCertificates) {
         final JsonUtils jsonUtils = new JsonUtils();
         final String[] nameRegion = {null};
         Runnable runnable = new Runnable() {
@@ -290,13 +296,13 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
             JsonUtils mJsonUtils = new JsonUtils();
             final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
-            Log.i(LOG_TAG,"Received Data: " + message[0] );
+            Log.i(LOG_TAG, "Received Data: " + message[0]);
 
-            if (dummyDevice.getType() == 1 && dummyDevice.getCode().equals(Encryption.MAC(mContext))) {
+            if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb,dummyDevice.getName()))) {
                 for (NsdServiceInfo x : nsdClient.GetAllServices()) {
                     //Find the match in services found and data received
                     if (x.getServiceName().contains(dummyDevice.getName())) {
-                        mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress());
+                        mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), dummyDevice.getUiud());
                         updateAwsState(dummyDevice);
                     }
                 }
@@ -304,6 +310,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
             if (dummyDevice.getType() == 8 && dummyDevice.getError() == 0) {
                 Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
+                deviceDbOperation.updateThing(mDb, dummyDevice.getName(), dummyDevice.getThing());
                 updateAwsState(dummyDevice);
             } else if (dummyDevice.getType() == 8 && dummyDevice.getError() == 1) {
                 Toast.makeText(mContext, "Cannot receive all Packages, please try again ", Toast.LENGTH_SHORT).show();
@@ -354,25 +361,39 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                     return true;
 
                 case R.id.action_delete:
-                    if (isConnectingToInternet(mContext)) {
-                        Runnable runnable = new Runnable() {
-                            public void run() {
+                    Runnable runnable = new Runnable() {
+                        public void run() {
+                            if (isInternetWorking()) {
                                 db.removeDevice(mDb, DeviceSelected);
                                 sqlOperationUserTable.deleteUserDevice(DeviceSelected);
                                 sqlOperationDeviceTable.deleteDevice(DeviceSelected);
                                 deleteDevice(DeviceSelected);
+                            } else {
+                                mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
                             }
-                        };
-                        Thread getAvailableDevices = new Thread(runnable);
-                        getAvailableDevices.start();
-                    } else {
-                        mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
-                    }
+                        }};
+                    Thread deleteDevice = new Thread(runnable);
+                    deleteDevice.start();
+
+                case R.id.action_share_device:
+                    Runnable thread = new Runnable() {
+                        public void run() {
+                            if (isInternetWorking()) {
+                                shareDevice(DeviceSelected, Position);
+                            } else {
+                                mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
+                            }
+                        }};
+                    Thread shareDevice = new Thread(thread);
+                    shareDevice.start();
                 default:
             }
             return false;
         }
 
+        /**
+         * Editing home and room for devices
+         */
         private void editBoxPopUp(final String deviceSelected) {
             AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
             dialog.setTitle("Customization Device");
@@ -418,6 +439,10 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         }
     }
 
+    /**
+     * Deleting device from android and cloud.
+     * NOTE : This method requires internet
+     */
     private void deleteDevice(String device) {
         CustomizationDevices deleteDevice = new CustomizationDevices();
         for (CustomizationDevices x : DeviceList) {
@@ -435,7 +460,24 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
             }
         });
+    }
 
+    /**
+     * Sharing device
+     */
+    private void shareDevice(String device, int position){
+        String uuid = DeviceDbOperation.getUiud(mDb,device);
+        String body = String.format(Constant.EMAIL_BODY, device);
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("message/rfc822");
+        i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"suresh@wozart.com"});
+        i.putExtra(Intent.EXTRA_SUBJECT, Constant.EMAIL_SUBJECT + device);
+        i.putExtra(Intent.EXTRA_TEXT   , body + uuid);
+        try {
+            mContext.startActivity(Intent.createChooser(i, "Share device to"));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(mContext, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String convertIP() {
@@ -450,14 +492,17 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         return DeviceList.size();
     }
 
-    public static boolean isConnectingToInternet(Context context) {
-
-        ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
-        return activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
+    private boolean isInternetWorking() {
+        boolean success = false;
+        try {
+            URL url = new URL("https://google.com");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(10000);
+            connection.connect();
+            success = connection.getResponseCode() == 200;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return success;
     }
 }

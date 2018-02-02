@@ -33,6 +33,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+/***************************************************************************
+ * File Name : LoginActivity
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Facebook login activity
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
+
 public class LoginActivity extends AppCompatActivity {
 
     private LoginButton loginButton;

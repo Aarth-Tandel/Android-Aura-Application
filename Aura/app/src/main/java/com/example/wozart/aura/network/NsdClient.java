@@ -8,9 +8,19 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : NsdClient
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Discovers local Aura Devices in network
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class NsdClient {
     private Context mContext;

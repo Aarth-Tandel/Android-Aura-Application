@@ -1,22 +1,47 @@
 package com.example.wozart.aura.activities.customization;
 
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.example.wozart.aura.R;
+import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
+import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
 import com.example.wozart.aura.sqlLite.device.DeviceDbOperation;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+/***************************************************************************
+ * File Name : CustomizationActivity
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Room, home and AWS customization for device
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class CustomizationActivity extends AppCompatActivity {
 
@@ -25,6 +50,8 @@ public class CustomizationActivity extends AppCompatActivity {
 
     private DeviceDbOperation db = new DeviceDbOperation();
     private SQLiteDatabase mDb;
+    private SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
+    private SqlOperationUserTable sqlOperationUserTable = new SqlOperationUserTable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +74,65 @@ public class CustomizationActivity extends AppCompatActivity {
         mDb = dbHelper.getWritableDatabase();
         devices = db.GetAllDevices(mDb);
         prepareLoad(devices);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deviceSharingUIUD();
+            }
+        });
     }
+
+    /**
+     * Getting device access
+     */
+    public void deviceSharingUIUD() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(CustomizationActivity.this);
+        final EditText input = new EditText(CustomizationActivity.this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        alert.setView(input);
+        alert.setMessage("Enter the shared id:");
+        alert.setTitle("Shared Device");
+        alert.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                if (input.getText().toString().trim().length() == 17) {
+                    updateSharedDevices(input.getText().toString().trim());
+                }
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // what ever you want to do with No option.
+            }
+        });
+        alert.show();
+    }
+
+    public boolean updateSharedDevices(final String uiud) {
+        final String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
+        final String deviceName = deviceId.substring(deviceId.length() - 6);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (isInternetWorking()) {
+                    String thing = sqlOperationDeviceTable.insertSlave(deviceId);
+                    sqlOperationUserTable.updateUserDevices(deviceName);
+                    db.AddDevice(mDb, "Hall", "Home", deviceName, uiud,thing);
+                } else {
+                    //TODO toast
+                }
+            }
+        }).start();
+
+        return false;
+    }
+
 
     /**
      * Adding few albums for testing
@@ -122,5 +207,22 @@ public class CustomizationActivity extends AppCompatActivity {
     private int dpToPx(int dp) {
         Resources r = getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
+    }
+
+    /**
+     * Check internet connection
+     */
+    public boolean isInternetWorking() {
+        boolean success = false;
+        try {
+            URL url = new URL("https://google.com");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(10000);
+            connection.connect();
+            success = connection.getResponseCode() == 200;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return success;
     }
 }

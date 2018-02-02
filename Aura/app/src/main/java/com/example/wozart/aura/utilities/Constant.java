@@ -11,10 +11,22 @@ import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.ROOM_NAME;
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.TABLE_NAME;
 import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.THING_NAME;
+import static com.example.wozart.aura.sqlLite.device.DeviceContract.DeviceEntry.UIUD;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : Constant
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : All constant values
+ * Revision History :
+ * ____________________________________________________________________________
+ * 30/01/18  Aarth Tandel - Sharing Details
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * 30/01/18 Version 1.1
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class Constant {
     //User's and Device Constants
@@ -50,6 +62,7 @@ public class Constant {
     public static final String UPDATE_THING_NAME = DEVICE_NAME + "=?";
     public static final String GET_ROOM_FOR_DEVICE = "select " + ROOM_NAME + " from " + TABLE_NAME + " where " + DEVICE_NAME + " =?";
     public static final String DELETE_DEVICE = DEVICE_NAME + " = ?";
+    public static final String GET_UIUD = "select " + UIUD + " from " + TABLE_NAME + " where " + DEVICE_NAME + " = ?";
 
     //SQL - Lite Queries for Favourite DB
     public static final String GET_ALL_FAVOURITE = "select * from " + FavouriteContract.FavouriteEntry.TABLE_NAME + " where " + FavouriteContract.FavouriteEntry.HOME_NAME + " = ?";
@@ -61,5 +74,9 @@ public class Constant {
     public static final String AWS_GET_ACCEPTED = "$aws/things/%s/shadow/get/accepted";
     public static final String AWS_UPDATE = "$aws/things/%s/shadow/update";
     public static final String AWS_GET = "$aws/things/%s/shadow/get";
+
+    //Sharing
+    public static final String EMAIL_SUBJECT = "Aura Guest access Invite for ";
+    public static final String EMAIL_BODY = "You have been invited to share access of %s.\n" + "Use the following code and experience smart and convenient living.\n";
 
 }

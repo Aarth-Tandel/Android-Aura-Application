@@ -1,8 +1,18 @@
 package com.example.wozart.aura.model;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : AwsState
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : State model for AWS IOT JSON
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class AwsState {
     private int led = 0;

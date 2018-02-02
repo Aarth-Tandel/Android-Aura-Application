@@ -17,5 +17,6 @@ public class DeviceContract {
         public static final String HOME_NAME = "home";
         public static final String ROOM_NAME = "room";
         public static final String THING_NAME = "thing";
+        public static final String UIUD = "uiud";
     }
 }

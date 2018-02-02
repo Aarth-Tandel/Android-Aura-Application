@@ -13,9 +13,19 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-/**
- * Created by wozart on 29/12/17.
- */
+/***************************************************************************
+ * File Name : TcpClient
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : TCP client to exchange JSON dat with Aura device
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
 
 public class TcpClient {
     public static final int SERVER_PORT = 2345;
@@ -109,7 +119,7 @@ public class TcpClient {
                     count++;
                 }
                 if(!messageFlag)
-                    mMessageListener.messageReceived("Server not rechable");
+                    mMessageListener.messageReceived("Server Not Reachable");
 
             } catch (Exception e) {
                 Log.e("TCP", "S: Error", e);

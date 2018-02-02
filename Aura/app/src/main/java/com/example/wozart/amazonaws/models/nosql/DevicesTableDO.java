@@ -17,7 +17,7 @@ public class DevicesTableDO {
     private String _deviceId;
     private List<String> _loads;
     private Map<String, String> _master;
-    private String _room;
+    private String _name;
     private Map<String, String> _slave;
     private String _thing;
     private String _uIUD;
@@ -47,13 +47,13 @@ public class DevicesTableDO {
     public void setMaster(final Map<String, String> _master) {
         this._master = _master;
     }
-    @DynamoDBAttribute(attributeName = "Room")
-    public String getRoom() {
-        return _room;
+    @DynamoDBAttribute(attributeName = "Name")
+    public String getName() {
+        return _name;
     }
 
-    public void setRoom(final String _room) {
-        this._room = _room;
+    public void setName(final String _name) {
+        this._name = _name;
     }
     @DynamoDBAttribute(attributeName = "Slave")
     public Map<String, String> getSlave() {

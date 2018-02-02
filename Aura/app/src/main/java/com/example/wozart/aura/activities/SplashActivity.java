@@ -23,6 +23,20 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/***************************************************************************
+ * File Name : SplashScreen
+ * Author : Aarth Tandel
+ * Date of Creation : 29/12/17
+ * Description : Loads all connection with AWS server, TCP Server and User Auth
+ * Revision History :
+ * ____________________________________________________________________________
+ * 29/12/17  Aarth Tandel - Initial Commit
+ * ____________________________________________________________________________
+ * 29/12/17 Version 1.0
+ * ____________________________________________________________________________
+ *
+ *****************************************************************************/
+
 public class SplashActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SplashActivity.class.getSimpleName();
