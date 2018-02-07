@@ -85,12 +85,12 @@ public class JsonUtils {
         }
     }
 
-    public String Serialize(AuraSwitch device) throws UnknownHostException {
+    public String Serialize(AuraSwitch device, String uiud) throws UnknownHostException {
         String name = device.getName();
         int[] states = device.getStates();
         int[] dims = device.getDims();
 
-        String data = "{\"type\":4, \"ip\":\"" + convertIP() + "\",\"name\":\"" + name + "\",\"state\":[" + states[0] + "," + states[1] + "," + states[2] + "," + states[3] + "],\"dimm\":["
+        String data = "{\"type\":4, \"ip\":\"" + convertIP() + "\",\"name\":\"" + name + "\",\"uiud\":\""+ uiud +"\",\"state\":[" + states[0] + "," + states[1] + "," + states[2] + "," + states[3] + "],\"dimm\":["
                 + dims[0] + "," + dims[1] + "," + dims[2] + "," + dims[3] + "]}";
         return data;
     }

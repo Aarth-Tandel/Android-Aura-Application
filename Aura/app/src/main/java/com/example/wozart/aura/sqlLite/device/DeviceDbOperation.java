@@ -232,14 +232,15 @@ public class DeviceDbOperation {
                 //Too bad :(
             } finally {
                 db.endTransaction();
-
             }
             return;
         }
 
         for (String x : devicesDuplicate) {
-            if (x.equals(device))
+            if (x.equals(device)) {
+                updateAlreadyAddedDevice(db,device,uiud);
                 flag = false;
+            }
         }
 
         if (flag) {
@@ -264,9 +265,17 @@ public class DeviceDbOperation {
         }
     }
 
+    private void updateAlreadyAddedDevice(SQLiteDatabase db, String device, String uiud){
+        ContentValues cv = new ContentValues();
+        String thing = null;
+        cv.put(UIUD, uiud);
+        cv.put(THING_NAME, thing);
+        db.update(TABLE_NAME, cv, UPDATE_THING_NAME, new String[]{device});
+    }
+
     public void devicesFromAws(SQLiteDatabase db, ArrayList<DevicesTableDO> devices) {
 
-        if(devices == null) return;
+        if(devices == null || devices.size() == 0) return;
         if (devices.get(0) == null) {
             Log.i(LOG_TAG, "No AWS devices");
             return;

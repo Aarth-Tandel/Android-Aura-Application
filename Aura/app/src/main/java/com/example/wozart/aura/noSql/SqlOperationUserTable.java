@@ -103,6 +103,8 @@ public class SqlOperationUserTable {
                     .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                     .build();
 
+            if(isDeviceAlreadyPresent(device)) return false;
+
             UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
             List<String> devices = new ArrayList<>();
             if (updateDevice.getDevices() != null)
@@ -111,6 +113,27 @@ public class SqlOperationUserTable {
             updateDevice.setDevices(devices);
             dynamoDBMapper.save(updateDevice);
             return true;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error: " + e);
+            return false;
+        }
+    }
+
+    private boolean isDeviceAlreadyPresent(String device){
+        try {
+            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+            this.dynamoDBMapper = DynamoDBMapper.builder()
+                    .dynamoDBClient(dynamoDBClient)
+                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                    .build();
+
+            UserTableDO updateDevice = dynamoDBMapper.load(UserTableDO.class, Constant.IDENTITY_ID);
+            for(String x : updateDevice.getDevices()){
+                if(x.equals(device)){
+                    return true;
+                }
+            }
+            return false;
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error: " + e);
             return false;

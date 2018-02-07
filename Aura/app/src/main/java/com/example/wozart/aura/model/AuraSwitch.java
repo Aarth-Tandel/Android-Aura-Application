@@ -30,12 +30,12 @@ public class AuraSwitch {
     private String uiud = Constant.UNPAIRED;
     private int aws = 0;
     private int error = 1;
+    private int fail = 0;
     private int online = 0;
     private int led = 0;
     private String id = null;
 
     public AuraSwitch() {
-
     }
 
     public int getType() {
@@ -160,4 +160,8 @@ public class AuraSwitch {
     public String getId() {return id;}
 
     public void setId(String id) {this.id = id;}
+
+    public int getFail() {return fail;}
+
+    public void setFail(int fail) {this.fail = fail;}
 }

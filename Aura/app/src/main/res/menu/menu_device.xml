@@ -10,4 +10,9 @@
         android:id="@+id/action_delete"
         android:orderInCategory="101"
         android:title="@string/action_remove" />
+
+    <item
+        android:id="@+id/action_share_device"
+        android:orderInCategory="103"
+        android:title="@string/action_share_device" />
 </menu>

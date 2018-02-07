@@ -63,6 +63,7 @@ public class Constant {
     public static final String GET_ROOM_FOR_DEVICE = "select " + ROOM_NAME + " from " + TABLE_NAME + " where " + DEVICE_NAME + " =?";
     public static final String DELETE_DEVICE = DEVICE_NAME + " = ?";
     public static final String GET_UIUD = "select " + UIUD + " from " + TABLE_NAME + " where " + DEVICE_NAME + " = ?";
+    public static final String UPDATE_UIUD = DEVICE_NAME + " = ? ";
 
     //SQL - Lite Queries for Favourite DB
     public static final String GET_ALL_FAVOURITE = "select * from " + FavouriteContract.FavouriteEntry.TABLE_NAME + " where " + FavouriteContract.FavouriteEntry.HOME_NAME + " = ?";

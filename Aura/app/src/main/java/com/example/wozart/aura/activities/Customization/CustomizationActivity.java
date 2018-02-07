@@ -97,7 +97,7 @@ public class CustomizationActivity extends AppCompatActivity {
         alert.setView(input);
         alert.setMessage("Enter the shared id:");
         alert.setTitle("Shared Device");
-        alert.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int whichButton) {
                 if (input.getText().toString().trim().length() == 17) {

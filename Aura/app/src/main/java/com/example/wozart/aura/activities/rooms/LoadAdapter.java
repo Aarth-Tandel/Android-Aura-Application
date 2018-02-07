@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -58,6 +59,9 @@ import static com.facebook.FacebookSdk.getApplicationContext;
  *****************************************************************************/
 
 public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> {
+
+    private static final String LOG_TAG = LoadAdapter.class.getSimpleName();
+
     private Context mContext;
     private List<Loads> LoadList;
     private String roomSelected;
@@ -106,7 +110,7 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                         if (mDevice != null) {
                             if (Nsd.GetIP(mDevice.getName()) != null) {
                                 try {
-                                    data = serialize.Serialize(mDevice);
+                                    data = serialize.Serialize(mDevice,DeviceDbOperation.getUiud(mDb,loads.getDevice()));
                                 } catch (UnknownHostException e) {
                                     e.printStackTrace();
                                 }
@@ -117,8 +121,10 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                                     ((RoomActivity) mContext).PusblishDataToShadow(mDevice.getThing(), JsonUtils.SerializeDataToAws(mDevice));
                                 }
                             }
-                        } else
-                            Toast.makeText(v.getContext(), "Device offline", Toast.LENGTH_SHORT).show();
+                        } else {
+                            if (mtoast != null) mtoast = null;
+                            Toast.makeText(mContext, "Device offline", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             });
@@ -266,11 +272,17 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                 mtoast = Toast.makeText(context, text, duration);
                 mtoast.show();
             } else {
+                Log.i(LOG_TAG, "Data Received : " + message[0]);
                 JsonUtils mJsonUtils = new JsonUtils();
                 AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
 
                 if (dummyDevice.getType() == 4) {
                     updateStates(dummyDevice.getStates(), dummyDevice.getName());
+                }
+
+                if(dummyDevice.getType() == 4 && dummyDevice.getFail() == 1){
+                    if (mtoast != null) mtoast = null;
+                    Toast.makeText(mContext, "Device not available", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -357,7 +369,6 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
         }
 
         private void editBoxPopUp(final Loads previousDevice) {
-            final Boolean[] flag = {true};
             AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
             final EditText input = new EditText(mContext);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(

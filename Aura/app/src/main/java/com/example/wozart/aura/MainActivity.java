@@ -725,7 +725,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Opening configuration webpage for Aura Switch
+     * Opening configuration web page for Aura Switch
      */
 
     private void openWebPage(String url) {

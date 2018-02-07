@@ -33,7 +33,7 @@ import java.util.List;
  * Created by wozart on 29/12/17.
  */
 
-public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder>{
+public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> {
     private Context mContext;
     private List<Rooms> roomsList;
     MainActivity activity = new MainActivity();
@@ -133,7 +133,7 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder>{
                     editBoxPopUp(previousDevice.getName());
                     return true;
 
-                case R.id.action_play_next:
+                case R.id.action_delete:
                     deleteItem(Position);
                     return true;
                 default:
@@ -142,14 +142,13 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder>{
         }
 
         private void deleteItem(int position) {
-            if(!RoomSelected.equals("Hall")) {
+            if (!RoomSelected.equals("Hall")) {
                 roomsList.remove(position);
                 notifyItemRemoved(position);
                 notifyItemRangeChanged(position, roomsList.size());
                 db.TransferDeletedDevices(mDb, activity.GetSelectedHome(), RoomSelected);
                 db.DeleteRoom(mDb, activity.GetSelectedHome(), RoomSelected);
-            }
-            else {
+            } else {
                 Toast.makeText(mContext, "Cant delete default room", Toast.LENGTH_SHORT).show();
             }
         }

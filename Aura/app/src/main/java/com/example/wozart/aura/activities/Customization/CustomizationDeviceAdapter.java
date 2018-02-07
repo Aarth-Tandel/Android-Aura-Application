@@ -20,7 +20,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -196,10 +198,10 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         final ThingTableDO[] KeysAndCertificates = {new ThingTableDO()};
         Runnable runnable = new Runnable() {
             public void run() {
-                String uiud = DeviceDbOperation.getUiud(mDb,device);
+                String uiud = DeviceDbOperation.getUiud(mDb, device);
                 String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
                 sqlOperationUserTable.updateUserDevices(device);
-                sqlOperationDeviceTable.newUserDevice(deviceId,uiud);
+                sqlOperationDeviceTable.newUserDevice(deviceId, uiud);
                 try {
                     Thread.sleep(3000);
                     String thing = sqlOperationDeviceTable.getThingForDevice(deviceId);
@@ -298,7 +300,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
             Log.i(LOG_TAG, "Received Data: " + message[0]);
 
-            if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb,dummyDevice.getName()))) {
+            if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName()))) {
                 for (NsdServiceInfo x : nsdClient.GetAllServices()) {
                     //Find the match in services found and data received
                     if (x.getServiceName().contains(dummyDevice.getName())) {
@@ -335,7 +337,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         // inflate menu
         PopupMenu popup = new PopupMenu(mContext, view);
         MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.menu_rooms, popup.getMenu());
+        inflater.inflate(R.menu.menu_device, popup.getMenu());
         popup.setOnMenuItemClickListener(new MyMenuItemClickListener(device, position));
         popup.show();
     }
@@ -364,28 +366,25 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                     Runnable runnable = new Runnable() {
                         public void run() {
                             if (isInternetWorking()) {
+                                String uiud = DeviceDbOperation.getUiud(mDb,DeviceSelected);
+                                String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
                                 db.removeDevice(mDb, DeviceSelected);
-                                sqlOperationUserTable.deleteUserDevice(DeviceSelected);
-                                sqlOperationDeviceTable.deleteDevice(DeviceSelected);
+                                sqlOperationUserTable.deleteUserDevice(deviceId);
+                                sqlOperationDeviceTable.deleteDevice(deviceId);
                                 deleteDevice(DeviceSelected);
                             } else {
                                 mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
                             }
-                        }};
+                        }
+                    };
                     Thread deleteDevice = new Thread(runnable);
                     deleteDevice.start();
+                    return true;
 
                 case R.id.action_share_device:
-                    Runnable thread = new Runnable() {
-                        public void run() {
-                            if (isInternetWorking()) {
-                                shareDevice(DeviceSelected, Position);
-                            } else {
-                                mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
-                            }
-                        }};
-                    Thread shareDevice = new Thread(thread);
-                    shareDevice.start();
+                    getEmail(DeviceSelected);
+                    return true;
+
                 default:
             }
             return false;
@@ -465,20 +464,50 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     /**
      * Sharing device
      */
-    private void shareDevice(String device, int position){
-        String uuid = DeviceDbOperation.getUiud(mDb,device);
+
+    private void getEmail(final String device) {
+        android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(mContext);
+        final EditText input = new EditText(mContext);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        alert.setView(input);
+        alert.setMessage("Enter the Email id to share with:");
+        alert.setTitle("Share");
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int whichButton) {
+                shareDevice(input.getText().toString().trim(), device);
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // what ever you want to do with No option.
+            }
+        });
+        alert.show();
+    }
+
+    private void shareDevice(String emailId, String device) {
+        String uuid = DeviceDbOperation.getUiud(mDb, device);
         String body = String.format(Constant.EMAIL_BODY, device);
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("message/rfc822");
-        i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"suresh@wozart.com"});
+        i.putExtra(Intent.EXTRA_EMAIL, new String[]{emailId});
         i.putExtra(Intent.EXTRA_SUBJECT, Constant.EMAIL_SUBJECT + device);
-        i.putExtra(Intent.EXTRA_TEXT   , body + uuid);
+        i.putExtra(Intent.EXTRA_TEXT, body + uuid);
         try {
             mContext.startActivity(Intent.createChooser(i, "Share device to"));
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(mContext, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }
     }
+
+    /**
+     * Utility function
+     */
 
     private String convertIP() {
         WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
