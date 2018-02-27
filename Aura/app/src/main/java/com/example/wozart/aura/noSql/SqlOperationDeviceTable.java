@@ -56,7 +56,7 @@ public class SqlOperationDeviceTable {
         return userDevice;
     }
 
-    public boolean newUserDevice(String deviceId, String uiud) {
+    public boolean newUserDevice(String deviceId, String uiud, String home, String room) {
         try {
             AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
             this.dynamoDBMapper = DynamoDBMapper.builder()
@@ -78,14 +78,15 @@ public class SqlOperationDeviceTable {
 
             DevicesTableDO updateDevices = new DevicesTableDO();
             Map<String, String> updatedName = new HashMap<String, String>();
-            updatedName.put(Constant.IDENTITY_ID, Constant.USERNAME);
-            updateDevices.setMaster(updatedName);
+            updateDevices.setMaster(Constant.USERNAME);
             updateDevices.setDeviceId(deviceId);
             updateDevices.setName(device);
             updateDevices.setUIUD(uiud);
             updateDevices.setSlave(null);
             updateDevices.setThing(thing);
             updateDevices.setLoads(loads);
+            updateDevices.setRoom(room);
+            updateDevices.setHome(home);
             dynamoDBMapper.save(updateDevices);
             return true;
         } catch (Exception e) {
@@ -177,7 +178,7 @@ public class SqlOperationDeviceTable {
         }
     }
 
-    public String insertSlave(String deviceId) {
+    public void insertSlave(ArrayList<DevicesTableDO> devices) {
         try {
             AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
             this.dynamoDBMapper = DynamoDBMapper.builder()
@@ -185,35 +186,33 @@ public class SqlOperationDeviceTable {
                     .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                     .build();
 
-            DevicesTableDO deviceThing = dynamoDBMapper.load(DevicesTableDO.class, deviceId);
-            Map<String, String> slaves = deviceThing.getSlave();
-            if (slaves != null) {
-                for (String slave : slaves.keySet()) {
-                    if (slave.equals(Constant.IDENTITY_ID)) {
-                        return null;
+            for(DevicesTableDO device : devices) {
+                DevicesTableDO deviceThing = dynamoDBMapper.load(DevicesTableDO.class, device.getDeviceId());
+                Map<String, String> slaves = deviceThing.getSlave();
+                if (slaves != null) {
+                    for (String slave : slaves.keySet()) {
+                        if (slave.equals(Constant.IDENTITY_ID)) {
+                            return;
+                        }
                     }
                 }
-            }
-            Map<String, String> master = deviceThing.getMaster();
-            for (String x : master.keySet()) {
-                if (x.equals(Constant.IDENTITY_ID)) {
-                    return null;
+                String master = deviceThing.getMaster();
+                if (master.equals(Constant.IDENTITY_ID)) {
+                    return;
+                }
+                if (slaves != null) {
+                    slaves.put(Constant.IDENTITY_ID, Constant.USERNAME);
+                    deviceThing.setSlave(slaves);
+                    dynamoDBMapper.save(deviceThing);
+                } else {
+                    Map<String, String> updatedName = new HashMap<>();
+                    updatedName.put(Constant.IDENTITY_ID, Constant.USERNAME);
+                    deviceThing.setSlave(updatedName);
+                    dynamoDBMapper.save(deviceThing);
                 }
             }
-            if (slaves != null) {
-                slaves.put(Constant.IDENTITY_ID, Constant.USERNAME);
-                deviceThing.setSlave(slaves);
-                dynamoDBMapper.save(deviceThing);
-            } else {
-                Map<String, String> updatedName = new HashMap<>();
-                updatedName.put(Constant.IDENTITY_ID, Constant.USERNAME);
-                deviceThing.setSlave(updatedName);
-                dynamoDBMapper.save(deviceThing);
-            }
-            return deviceThing.getThing();
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error : " + e);
-            return null;
         }
     }
 }

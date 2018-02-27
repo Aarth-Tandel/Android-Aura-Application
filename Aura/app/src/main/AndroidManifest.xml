@@ -67,11 +67,11 @@
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".activities.customization.CustomizationActivity"
-            android:parentActivityName=".MainActivity"></activity>
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".activities.sharing.SharingActivity"
             android:label="@string/title_activity_sharing"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>

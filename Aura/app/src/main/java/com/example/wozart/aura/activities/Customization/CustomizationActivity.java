@@ -1,10 +1,14 @@
 package com.example.wozart.aura.activities.customization;
 
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -18,6 +22,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.example.wozart.aura.R;
+import com.example.wozart.aura.network.AwsPubSub;
 import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
 import com.example.wozart.aura.noSql.SqlOperationUserTable;
 import com.example.wozart.aura.sqlLite.device.DeviceDbHelper;
@@ -53,6 +58,9 @@ public class CustomizationActivity extends AppCompatActivity {
     private SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
     private SqlOperationUserTable sqlOperationUserTable = new SqlOperationUserTable();
 
+    private AwsPubSub awsPubSub;
+    boolean mBounded;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,60 +87,49 @@ public class CustomizationActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deviceSharingUIUD();
             }
         });
     }
 
     /**
-     * Getting device access
+     * Calling AWSPubSub method from this activity
      */
-    public void deviceSharingUIUD() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(CustomizationActivity.this);
-        final EditText input = new EditText(CustomizationActivity.this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-        alert.setView(input);
-        alert.setMessage("Enter the shared id:");
-        alert.setTitle("Shared Device");
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
-            public void onClick(DialogInterface dialog, int whichButton) {
-                if (input.getText().toString().trim().length() == 17) {
-                    updateSharedDevices(input.getText().toString().trim());
-                }
-            }
-        });
-
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // what ever you want to do with No option.
-            }
-        });
-        alert.show();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent mIntent = new Intent(this, AwsPubSub.class);
+        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
     }
 
-    public boolean updateSharedDevices(final String uiud) {
-        final String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
-        final String deviceName = deviceId.substring(deviceId.length() - 6);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (isInternetWorking()) {
-                    String thing = sqlOperationDeviceTable.insertSlave(deviceId);
-                    sqlOperationUserTable.updateUserDevices(deviceName);
-                    db.AddDevice(mDb, "Hall", "Home", deviceName, uiud,thing);
-                } else {
-                    //TODO toast
-                }
-            }
-        }).start();
+    ServiceConnection mConnection = new ServiceConnection() {
 
-        return false;
+        public void onServiceDisconnected(ComponentName name) {
+            mBounded = false;
+            awsPubSub = null;
+        }
+
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBounded = true;
+            AwsPubSub.LocalAwsBinder mLocalBinder = (AwsPubSub.LocalAwsBinder) service;
+            awsPubSub = mLocalBinder.getServerInstance();
+        }
+    };
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mBounded) {
+            unbindService(mConnection);
+            mBounded = false;
+        }
     }
 
+    public void connectToAws(String thing){
+        awsPubSub.AwsGet(thing);
+        awsPubSub.AwsGetPublish(thing);
+        awsPubSub.AwsSubscribe(thing);
+    }
 
     /**
      * Adding few albums for testing

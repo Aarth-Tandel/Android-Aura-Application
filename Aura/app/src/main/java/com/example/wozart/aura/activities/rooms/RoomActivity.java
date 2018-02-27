@@ -131,16 +131,16 @@ public class RoomActivity extends AppCompatActivity {
             @Override
             public void run() {
                 for (final NsdServiceInfo service : Nsd.GetServiceInfo()) {
-                    JsonUtils mJsonUtils = new JsonUtils();
-                    String data = null;
                     try {
-                        data = mJsonUtils.InitialData(convertIP());
+                        JsonUtils mJsonUtils = new JsonUtils();
+                        String device = service.getServiceName().substring(service.getServiceName().length() - 6, service.getServiceName().length());
+                        String uiud = DeviceDbOperation.getUiud(mDb,device);
+                        if(uiud == null) uiud = Constant.UNPAIRED;
+                        new ConnectTask(mJsonUtils.InitialData(uiud), service.getHost().getHostAddress()).execute("");
+                        Log.d(LOG_TAG, "Initial data: " + mJsonUtils.InitialData(uiud) + " to " + service.getServiceName());
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
-
-                    new ConnectTask(data, service.getHost().getHostAddress()).execute("");
-                    Log.d(LOG_TAG, "Initial data: " + data + " to " + service.getServiceName());
                 }
             }
         }, 1000);
@@ -212,13 +212,6 @@ public class RoomActivity extends AppCompatActivity {
 
     }
 
-    private String convertIP() {
-        WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = mWifi.getConnectionInfo();
-        int ipAddress = wifiInfo.getIpAddress();
-        return String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-    }
-
     /**
      * Calling the method of service
      */
@@ -287,7 +280,6 @@ public class RoomActivity extends AppCompatActivity {
                     i++;
                 }
             }
-
         }
 
         adapter.notifyDataSetChanged();

@@ -28,9 +28,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.amazonaws.models.nosql.ThingTableDO;
 import com.example.wozart.aura.R;
 import com.example.wozart.aura.model.AuraSwitch;
+import com.example.wozart.aura.network.AwsPubSub;
 import com.example.wozart.aura.network.NsdClient;
 import com.example.wozart.aura.network.TcpClient;
 import com.example.wozart.aura.noSql.SqlOperationDeviceTable;
@@ -80,17 +82,16 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     private SQLiteDatabase mDb;
     private TcpClient mTcpClient;
     private NsdClient nsdClient;
+    private AwsPubSub awsPubSub;
 
     private Toast mtoast;
-    private ThingTableDO KeysAndCertificates = new ThingTableDO();
     private SqlOperationDeviceTable sqlOperationDeviceTable = new SqlOperationDeviceTable();
     private SqlOperationUserTable sqlOperationUserTable = new SqlOperationUserTable();
-    private DeviceDbOperation deviceDbOperation = new DeviceDbOperation();
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView textViewDevice, textViewHome, textViewRoom;
-        public ImageView thumbnail1, overflow;
-        public Switch AwsConnectSwitch;
+        private TextView textViewDevice, textViewHome, textViewRoom;
+        private ImageView thumbnail1, overflow;
+        private Switch AwsConnectSwitch;
 
         public MyViewHolder(View view) {
             super(view);
@@ -111,7 +112,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
         DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
         mDb = dbHelper.getWritableDatabase();
-        db.InsertBasicData(mDb);
         nsdClient = new NsdClient(mContext);
         nsdClient.initializeNsd();
         nsdDiscovery();
@@ -131,16 +131,16 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             @Override
             public void run() {
                 for (final NsdServiceInfo service : nsdClient.GetServiceInfo()) {
-                    JsonUtils mJsonUtils = new JsonUtils();
-                    String data = null;
                     try {
-                        data = mJsonUtils.InitialData(convertIP());
+                        JsonUtils mJsonUtils = new JsonUtils();
+                        String device = service.getServiceName().substring(service.getServiceName().length() - 6, service.getServiceName().length());
+                        String uiud = DeviceDbOperation.getUiud(mDb, device);
+                        if (uiud == null) uiud = Constant.UNPAIRED;
+                        new ConnectTask(mJsonUtils.InitialData(uiud), service.getHost().getHostAddress()).execute("");
+                        Log.d(LOG_TAG, "Initial data: " + mJsonUtils.InitialData(uiud) + " to " + service.getServiceName());
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
-
-                    new ConnectTask(data, service.getHost().getHostAddress()).execute("");
-                    Log.d(LOG_TAG, "Initial data: " + data + " to " + service.getServiceName());
                 }
             }
         }, 1000);
@@ -160,11 +160,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         holder.textViewDevice.setText(device.getDevice());
         holder.textViewHome.setText(device.getHome());
         holder.textViewRoom.setText(device.getRoom());
-        // loading rooms cover using Glide library
-//        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail1);
-//        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail2);
-//        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail3);
-//        Glide.with(mContext).load(rooms.getThumbnail()).into(holder.thumbnail4);
 
         if (device.getAws() == 1 || device.getThing() != null)
             holder.AwsConnectSwitch.setChecked(true);
@@ -175,7 +170,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             @Override
             public void onClick(View view) {
                 if (holder.AwsConnectSwitch.isChecked())
-                    getKeys(device.getDevice());
+                    getKeys(device);
                 else
                     Toast.makeText(mContext, device.getDevice() + " Selected", Toast.LENGTH_SHORT).show();
             }
@@ -192,23 +187,23 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
     /**
      * Transferring Keys to Device
      */
-    private void getKeys(final String device) {
-        new ConnectTask("{\"type\":8, \"set\":1}", mDeviceUtils.GetIP(device)).execute("");
+    private void getKeys(final CustomizationDevices device) {
+        new ConnectTask("{\"type\":8, \"set\":1}", mDeviceUtils.GetIP(device.getDevice())).execute("");
         final SqlOperationThingTable thingInfo = new SqlOperationThingTable();
         final ThingTableDO[] KeysAndCertificates = {new ThingTableDO()};
         Runnable runnable = new Runnable() {
             public void run() {
-                String uiud = DeviceDbOperation.getUiud(mDb, device);
+                String uiud = DeviceDbOperation.getUiud(mDb, device.getDevice());
                 String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
-                sqlOperationUserTable.updateUserDevices(device);
-                sqlOperationDeviceTable.newUserDevice(deviceId, uiud);
+                sqlOperationUserTable.updateUserDevices(deviceId);
+                sqlOperationDeviceTable.newUserDevice(deviceId, uiud, device.getHome(), device.getRoom());
                 try {
                     Thread.sleep(3000);
                     String thing = sqlOperationDeviceTable.getThingForDevice(deviceId);
                     KeysAndCertificates[0] = thingInfo.thingDetails(thing);
-                    sendCertificate(device, KeysAndCertificates[0]);
+                    sendCertificate(device.getDevice(), KeysAndCertificates[0]);
                     Thread.sleep(1000);
-                    sendKeys(device, KeysAndCertificates[0]);
+                    sendKeys(device.getDevice(), KeysAndCertificates[0]);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -223,11 +218,15 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         final String[] nameRegion = {null};
         Runnable runnable = new Runnable() {
             public void run() {
-                nameRegion[0] = jsonUtils.AwsRegionThing(KeysAndCertificates.getRegion(), KeysAndCertificates.getThing());
-                new ConnectTask(nameRegion[0], mDeviceUtils.GetIP(device)).execute("");
-                ArrayList<String> data = jsonUtils.Certificates(KeysAndCertificates.getCertificate());
-                sendTcpKeys(data, "Certificate", device);
-                Log.d(LOG_TAG, "Send Certificate Keys" + data);
+                try {
+                    nameRegion[0] = jsonUtils.AwsRegionThing(KeysAndCertificates.getRegion(), KeysAndCertificates.getThing());
+                    new ConnectTask(nameRegion[0], mDeviceUtils.GetIP(device)).execute("");
+                    ArrayList<String> data = jsonUtils.Certificates(KeysAndCertificates.getCertificate());
+                    sendTcpKeys(data, "Certificate", device);
+                    Log.d(LOG_TAG, "Send Certificate Keys" + data);
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "Error: " + e);
+                }
             }
         };
         Thread sendCertificates = new Thread(runnable);
@@ -300,238 +299,246 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
             final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
             Log.i(LOG_TAG, "Received Data: " + message[0]);
 
-            if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName()))) {
-                for (NsdServiceInfo x : nsdClient.GetAllServices()) {
-                    //Find the match in services found and data received
-                    if (x.getServiceName().contains(dummyDevice.getName())) {
-                        mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), dummyDevice.getUiud());
-                        updateAwsState(dummyDevice);
-                    }
-                }
-            }
+            switch (dummyDevice.getType()) {
+                case 1:
+                    if (dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName())) && dummyDevice.getAWSConfiguration() == 1) {
+                        for (NsdServiceInfo x : nsdClient.GetAllServices()) {
+                            //Find the match in services found and data received
+                            if (x.getServiceName().contains(dummyDevice.getName())) {
+                                mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), dummyDevice.getUiud());
+                                updateAwsState(dummyDevice);
 
-            if (dummyDevice.getType() == 8 && dummyDevice.getError() == 0) {
-                Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
-                deviceDbOperation.updateThing(mDb, dummyDevice.getName(), dummyDevice.getThing());
-                updateAwsState(dummyDevice);
-            } else if (dummyDevice.getType() == 8 && dummyDevice.getError() == 1) {
-                Toast.makeText(mContext, "Cannot receive all Packages, please try again ", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void updateAwsState(AuraSwitch device) {
-        for (CustomizationDevices x : DeviceList) {
-            if (device.getName().equals(x.getDevice())) {
-                if (device.getAWSConfiguration() == 1) x.setAws(1);
-                else x.setAws(0);
-                notifyItemChanged(x.getPosition(), x);
-            }
-        }
-    }
-
-    /**
-     * Showing popup menu when tapping on 3 dots
-     */
-    private void showPopupMenu(View view, String device, int position) {
-        // inflate menu
-        PopupMenu popup = new PopupMenu(mContext, view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.menu_device, popup.getMenu());
-        popup.setOnMenuItemClickListener(new MyMenuItemClickListener(device, position));
-        popup.show();
-    }
-
-    /**
-     * Click listener for popup menu items
-     */
-    class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
-
-        private String DeviceSelected;
-        private int Position;
-
-        private MyMenuItemClickListener(String device, int position) {
-            DeviceSelected = device;
-            Position = position;
-        }
-
-        @Override
-        public boolean onMenuItemClick(MenuItem menuItem) {
-            switch (menuItem.getItemId()) {
-                case R.id.action_add_favourite:
-                    editBoxPopUp(DeviceSelected);
-                    return true;
-
-                case R.id.action_delete:
-                    Runnable runnable = new Runnable() {
-                        public void run() {
-                            if (isInternetWorking()) {
-                                String uiud = DeviceDbOperation.getUiud(mDb,DeviceSelected);
-                                String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
-                                db.removeDevice(mDb, DeviceSelected);
-                                sqlOperationUserTable.deleteUserDevice(deviceId);
-                                sqlOperationDeviceTable.deleteDevice(deviceId);
-                                deleteDevice(DeviceSelected);
-                            } else {
-                                mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
                             }
                         }
-                    };
-                    Thread deleteDevice = new Thread(runnable);
-                    deleteDevice.start();
-                    return true;
+                    }
+                    return;
 
-                case R.id.action_share_device:
-                    getEmail(DeviceSelected);
-                    return true;
+                case 8:
+                    if (dummyDevice.getError() == 0) {
+                        Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
+                        DeviceDbOperation deviceDbOperation = new DeviceDbOperation();
+                        deviceDbOperation.updateThing(mDb, dummyDevice.getName(), dummyDevice.getThing());
+                        if (mContext instanceof CustomizationActivity) {
+                            ((CustomizationActivity) mContext).connectToAws(dummyDevice.getThing());
+                        }
+                        return;
+                    }
 
-                default:
+                    if (dummyDevice.getError() == 1) {
+                        Toast.makeText(mContext, "Cannot receive all Packages, please try again ", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    return;
             }
-            return false;
+        }
+    }
+
+        private void updateAwsState(AuraSwitch device) {
+            for (CustomizationDevices x : DeviceList) {
+                if (device.getName().equals(x.getDevice())) {
+                    if (device.getAWSConfiguration() == 1) x.setAws(1);
+                    else x.setAws(0);
+                    notifyItemChanged(x.getPosition(), x);
+                }
+            }
         }
 
         /**
-         * Editing home and room for devices
+         * Showing popup menu when tapping on 3 dots
          */
-        private void editBoxPopUp(final String deviceSelected) {
-            AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
-            dialog.setTitle("Customization Device");
-            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            final View dialogView = inflater.inflate(R.layout.customization_edit_dialog, null);
-            dialog.setView(dialogView);
-
-            final Spinner homeSpinner = (Spinner) dialogView.findViewById(R.id.spinner_home);
-            ArrayList<String> homes = db.GetAllHome(mDb);
-            ArrayAdapter<String> adapterHome = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_dropdown_item, homes);
-            homeSpinner.setAdapter(adapterHome);
-
-            final Spinner roomSpinner = (Spinner) dialogView.findViewById(R.id.spinner_room);
-            homeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    ArrayList<String> rooms = db.GetRooms(mDb, homeSpinner.getSelectedItem().toString());
-                    ArrayAdapter<String> adapterRoom = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_dropdown_item, rooms);
-                    roomSpinner.setAdapter(adapterRoom);
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-                }
-            });
-            dialog.setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    if (homeSpinner.getSelectedItem().toString() != null && roomSpinner.getSelectedItem().toString() != null) {
-                        db.UpdateRoomAndHome(mDb, homeSpinner.getSelectedItem().toString(), roomSpinner.getSelectedItem().toString(), deviceSelected);
-                        for (CustomizationDevices x : DeviceList) {
-                            if (deviceSelected.equals(x.getDevice())) {
-                                x.setHome(homeSpinner.getSelectedItem().toString());
-                                x.setRoom(roomSpinner.getSelectedItem().toString());
-                                notifyItemChanged(Position, x);
-                            }
-                        }
-                    } else {
-                        Toast.makeText(mContext, "Please make appropriate selection", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-            dialog.show();
+        private void showPopupMenu(View view, String device, int position) {
+            // inflate menu
+            PopupMenu popup = new PopupMenu(mContext, view);
+            MenuInflater inflater = popup.getMenuInflater();
+            inflater.inflate(R.menu.menu_device, popup.getMenu());
+            popup.setOnMenuItemClickListener(new MyMenuItemClickListener(device, position));
+            popup.show();
         }
-    }
 
-    /**
-     * Deleting device from android and cloud.
-     * NOTE : This method requires internet
-     */
-    private void deleteDevice(String device) {
-        CustomizationDevices deleteDevice = new CustomizationDevices();
-        for (CustomizationDevices x : DeviceList) {
-            if (x.getDevice().equals(device)) {
-                deleteDevice = x;
+        /**
+         * Click listener for popup menu items
+         */
+        class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
+
+            private String DeviceSelected;
+            private int Position;
+
+            private MyMenuItemClickListener(String device, int position) {
+                DeviceSelected = device;
+                Position = position;
             }
-        }
-        final CustomizationDevices finalDeleteDevice = deleteDevice;
-        runOnUiThread(new Runnable() {
+
             @Override
-            public void run() {
-                DeviceList.remove(finalDeleteDevice.getPosition());
-                notifyItemRemoved(finalDeleteDevice.getPosition());
-                notifyItemChanged(finalDeleteDevice.getPosition());
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.action_add_favourite:
+                        editBoxPopUp(DeviceSelected);
+                        return true;
 
+                    case R.id.action_delete:
+                        Runnable runnable = new Runnable() {
+                            public void run() {
+                                if (isInternetWorking()) {
+                                    String uiud = DeviceDbOperation.getUiud(mDb, DeviceSelected);
+                                    String deviceId = uiud.substring(0, Math.min(uiud.length(), 12));
+                                    db.removeDevice(mDb, DeviceSelected);
+                                    sqlOperationUserTable.deleteUserDevice(deviceId);
+                                    sqlOperationDeviceTable.deleteDevice(deviceId);
+                                    deleteDevice(DeviceSelected);
+                                } else {
+                                    mtoast.makeText(mContext, "Internet connection is required", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        };
+                        Thread deleteDevice = new Thread(runnable);
+                        deleteDevice.start();
+                        return true;
+
+                    case R.id.action_share_device:
+                        getEmail(DeviceSelected);
+                        return true;
+
+                    default:
+                }
+                return false;
             }
-        });
-    }
 
-    /**
-     * Sharing device
-     */
+            /**
+             * Editing home and room for devices
+             */
+            private void editBoxPopUp(final String deviceSelected) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
+                dialog.setTitle("Customization Device");
+                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                final View dialogView = inflater.inflate(R.layout.customization_edit_dialog, null);
+                dialog.setView(dialogView);
 
-    private void getEmail(final String device) {
-        android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(mContext);
-        final EditText input = new EditText(mContext);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-        alert.setView(input);
-        alert.setMessage("Enter the Email id to share with:");
-        alert.setTitle("Share");
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                final Spinner homeSpinner = (Spinner) dialogView.findViewById(R.id.spinner_home);
+                ArrayList<String> homes = db.GetAllHome(mDb);
+                ArrayAdapter<String> adapterHome = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_dropdown_item, homes);
+                homeSpinner.setAdapter(adapterHome);
 
-            public void onClick(DialogInterface dialog, int whichButton) {
-                shareDevice(input.getText().toString().trim(), device);
+                final Spinner roomSpinner = (Spinner) dialogView.findViewById(R.id.spinner_room);
+                homeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                        ArrayList<String> rooms = db.GetRooms(mDb, homeSpinner.getSelectedItem().toString());
+                        ArrayAdapter<String> adapterRoom = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_dropdown_item, rooms);
+                        roomSpinner.setAdapter(adapterRoom);
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+                    }
+                });
+                dialog.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if (homeSpinner.getSelectedItem().toString() != null && roomSpinner.getSelectedItem().toString() != null) {
+                            db.UpdateRoomAndHome(mDb, homeSpinner.getSelectedItem().toString(), roomSpinner.getSelectedItem().toString(), deviceSelected);
+                            for (CustomizationDevices x : DeviceList) {
+                                if (deviceSelected.equals(x.getDevice())) {
+                                    x.setHome(homeSpinner.getSelectedItem().toString());
+                                    x.setRoom(roomSpinner.getSelectedItem().toString());
+                                    notifyItemChanged(Position, x);
+                                }
+                            }
+                        } else {
+                            Toast.makeText(mContext, "Please make appropriate selection", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                dialog.show();
             }
-        });
 
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // what ever you want to do with No option.
+        }
+
+        /**
+         * Deleting device from android and cloud.
+         * NOTE : This method requires internet
+         */
+        private void deleteDevice(String device) {
+            CustomizationDevices deleteDevice = new CustomizationDevices();
+            for (CustomizationDevices x : DeviceList) {
+                if (x.getDevice().equals(device)) {
+                    deleteDevice = x;
+                }
             }
-        });
-        alert.show();
-    }
+            final CustomizationDevices finalDeleteDevice = deleteDevice;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    DeviceList.remove(finalDeleteDevice.getPosition());
+                    notifyItemRemoved(finalDeleteDevice.getPosition());
+                    notifyItemChanged(finalDeleteDevice.getPosition());
 
-    private void shareDevice(String emailId, String device) {
-        String uuid = DeviceDbOperation.getUiud(mDb, device);
-        String body = String.format(Constant.EMAIL_BODY, device);
-        Intent i = new Intent(Intent.ACTION_SEND);
-        i.setType("message/rfc822");
-        i.putExtra(Intent.EXTRA_EMAIL, new String[]{emailId});
-        i.putExtra(Intent.EXTRA_SUBJECT, Constant.EMAIL_SUBJECT + device);
-        i.putExtra(Intent.EXTRA_TEXT, body + uuid);
-        try {
-            mContext.startActivity(Intent.createChooser(i, "Share device to"));
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(mContext, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        /**
+         * Sharing device
+         */
+
+        private void getEmail(final String device) {
+            android.support.v7.app.AlertDialog.Builder alert = new android.support.v7.app.AlertDialog.Builder(mContext);
+            final EditText input = new EditText(mContext);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
+            input.setLayoutParams(lp);
+            alert.setView(input);
+            alert.setMessage("Enter the Email id to share with:");
+            alert.setTitle("Share");
+            alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    shareDevice(input.getText().toString().trim(), device);
+                }
+            });
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    // what ever you want to do with No option.
+                }
+            });
+            alert.show();
+        }
+
+        private void shareDevice(String emailId, String device) {
+            String uuid = DeviceDbOperation.getUiud(mDb, device);
+            String body = String.format(Constant.EMAIL_BODY, device);
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("message/rfc822");
+            i.putExtra(Intent.EXTRA_EMAIL, new String[]{emailId});
+            i.putExtra(Intent.EXTRA_SUBJECT, Constant.EMAIL_SUBJECT + device);
+            i.putExtra(Intent.EXTRA_TEXT, body + uuid);
+            try {
+                mContext.startActivity(Intent.createChooser(i, "Share device to"));
+            } catch (android.content.ActivityNotFoundException ex) {
+                Toast.makeText(mContext, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        /**
+         * Utility function
+         */
+
+        @Override
+        public int getItemCount() {
+            return DeviceList.size();
+        }
+
+        private boolean isInternetWorking() {
+            boolean success = false;
+            try {
+                URL url = new URL("https://google.com");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setConnectTimeout(10000);
+                connection.connect();
+                success = connection.getResponseCode() == 200;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return success;
         }
     }
-
-    /**
-     * Utility function
-     */
-
-    private String convertIP() {
-        WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = mWifi.getConnectionInfo();
-        int ipAddress = wifiInfo.getIpAddress();
-        return String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-    }
-
-    @Override
-    public int getItemCount() {
-        return DeviceList.size();
-    }
-
-    private boolean isInternetWorking() {
-        boolean success = false;
-        try {
-            URL url = new URL("https://google.com");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(10000);
-            connection.connect();
-            success = connection.getResponseCode() == 200;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return success;
-    }
-}

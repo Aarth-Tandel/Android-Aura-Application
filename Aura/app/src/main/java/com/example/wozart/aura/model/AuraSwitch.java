@@ -11,29 +11,30 @@ import com.example.wozart.aura.utilities.Constant;
  * ____________________________________________________________________________
  * 29/12/17  Aarth Tandel - Initial Commit
  * 31/01/18  Aarth Tandel - Set id for table
+ * 09/02/18  Aarth Tandel - Mdl added
  * ____________________________________________________________________________
  * 29/12/17 Version 1.0
  * 31/01/18 Version 1.1
+ * 09/02/18 Version 1.2
  * ____________________________________________________________________________
  *
  *****************************************************************************/
 
 public class AuraSwitch {
-    private int type = 1;
-    private String name = "4module";
+    private int type = -1;
+    private String name = "Error";
     private String thing;
     private int state[] = new int[]{0, 0, 0, 0};
-    private int dimm[] = new int[]{100, 100, 100, 100};
-    private double version = 0.0;
-    private int nodes = 4;
+    private int dim[] = new int[]{100, 100, 100, 100};
+    private int mdl;
     private String ip;
     private String uiud = Constant.UNPAIRED;
     private int aws = 0;
-    private int error = 1;
-    private int fail = 0;
+    private int error;
     private int online = 0;
     private int led = 0;
     private String id = null;
+    private int dsy = -1;
 
     public AuraSwitch() {
     }
@@ -59,15 +60,11 @@ public class AuraSwitch {
     }
 
     public int[] getDims() {
-        return dimm;
+        return dim;
     }
 
-    public double getVersion() {
-        return version;
-    }
-
-    public int getNodes() {
-        return nodes;
+    public double getModel() {
+        return mdl;
     }
 
     public String getIP() {
@@ -86,13 +83,9 @@ public class AuraSwitch {
         return error;
     }
 
-    public int getOnline() {
-        return online;
-    }
-
     public void setStates(int[] state){this.state = state;}
 
-    public void setDims(int[] dimm){this.dimm = dimm;}
+    public void setDims(int[] dimm){this.dim = dimm;}
 
     public void setName(String name) {
         this.name = name;
@@ -112,7 +105,7 @@ public class AuraSwitch {
     public void setDummyDims(int node) {
         for (int i = 0; i < 4; i++) {
             if (i == node) {
-                this.dimm[i] = 100;
+                this.dim[i] = 100;
             }
         }
     }
@@ -121,12 +114,8 @@ public class AuraSwitch {
         this.type = type;
     }
 
-    public void setVersion(double version) {
-        this.version = version;
-    }
-
-    public void setNodes(int nodes) {
-        this.nodes = nodes;
+    public void setModel(int mdl) {
+        this.mdl = mdl;
     }
 
     public void setIP(String ip) {
@@ -139,10 +128,6 @@ public class AuraSwitch {
 
     public void setAWSConfiguration(int aws) {
         this.aws = aws;
-    }
-
-    public void setError(int error) {
-        this.error = error;
     }
 
     public void setOnline(int online) {
@@ -161,7 +146,5 @@ public class AuraSwitch {
 
     public void setId(String id) {this.id = id;}
 
-    public int getFail() {return fail;}
-
-    public void setFail(int fail) {this.fail = fail;}
+    public int getDiscovery(){return dsy;}
 }

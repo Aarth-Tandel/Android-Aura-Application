@@ -64,20 +64,17 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.My
     public FavouritesAdapter(Context mContext, List<Favourites> List) {
         this.mContext = mContext;
         this.favouriteList = List;
+        DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
+        mDb = dbHelper.getWritableDatabase();
+
+        FavouriteDbHelper dbFavouriteHelper = new FavouriteDbHelper(mContext);
+        mFavouriteDb = dbFavouriteHelper.getWritableDatabase();
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.load_card, parent, false);
-
-        DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
-        mDb = dbHelper.getWritableDatabase();
-        db.InsertBasicData(mDb);
-
-        FavouriteDbHelper dbFavouriteHelper = new FavouriteDbHelper(mContext);
-        mFavouriteDb = dbFavouriteHelper.getWritableDatabase();
-
         return new MyViewHolder(itemView);
     }
 

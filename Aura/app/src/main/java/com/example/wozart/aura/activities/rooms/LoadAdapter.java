@@ -240,7 +240,6 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
         private String ip = null;
 
         private ConnectTask(String message, String address) {
-            super();
             data = message;
             ip = address;
         }
@@ -257,7 +256,6 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                 }
             });
             mTcpClient.run(data, ip);
-
             return null;
         }
 
@@ -280,9 +278,9 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                     updateStates(dummyDevice.getStates(), dummyDevice.getName());
                 }
 
-                if(dummyDevice.getType() == 4 && dummyDevice.getFail() == 1){
+                if(dummyDevice.getType() == 4 && dummyDevice.getError() == 1){
                     if (mtoast != null) mtoast = null;
-                    Toast.makeText(mContext, "Device not available", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "Unauthorized Device", Toast.LENGTH_SHORT).show();
                 }
             }
         }

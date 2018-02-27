@@ -70,7 +70,6 @@ public class RoomAdapter extends RecyclerView.Adapter<RoomAdapter.MyViewHolder> 
         this.roomsList = roomsList;
         DeviceDbHelper dbHelper = new DeviceDbHelper(mContext);
         mDb = dbHelper.getWritableDatabase();
-        db.InsertBasicData(mDb);
     }
 
     @Override

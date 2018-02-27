@@ -34,15 +34,13 @@ public class Constant {
     public static String USERNAME = null;
     public static final String CLOSED_CONNECTION = "client_closed_connection";
     public static final String SERVER_NOT_REACHABLE = "Server Not Reachable";
-    public static final String UNPAIRED = "00000000000000000";
-    public static final String PAIRED = "00000000000000011";
-    public static final String WRONG_PIN = "xx:xx:xx:xx:xx:xx";
+    public static final String UNPAIRED = "xxxxxxxxxxxxxxxxx";
     public static final String NETWORK_SSID = "Aura";
     public static final String URL = "http://192.168.10.1/";
     public static final int MAX_HOME = 5;
 
     //SQL - Lite Queries for Device DB
-    public static final String GET_ALL_DEVICES = "select * from " + TABLE_NAME;
+    public static final String GET_ALL_DEVICES = "select " + DEVICE_NAME + ", " + HOME_NAME + ", " + ROOM_NAME + ", " + THING_NAME + " from " + TABLE_NAME;
     public static final String GET_ALL_HOME = "select distinct " + HOME_NAME + " from " + TABLE_NAME;
     public static final String INSERT_INITIAL_DATA = "select * from " + TABLE_NAME;
     public static final String GET_ROOMS = "select distinct " + ROOM_NAME + " from " + TABLE_NAME + " where " + HOME_NAME + " = ?";

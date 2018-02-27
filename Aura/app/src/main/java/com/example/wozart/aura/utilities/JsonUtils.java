@@ -22,7 +22,6 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class JsonUtils {
     private static final String LOG_TAG = JsonUtils.class.getSimpleName();
-    private static int ToggleLed = 0;
 
     public static AwsState DeserializeAwsData(String Data) {
         Gson gson = new Gson();
@@ -90,20 +89,8 @@ public class JsonUtils {
         int[] states = device.getStates();
         int[] dims = device.getDims();
 
-        String data = "{\"type\":4, \"ip\":\"" + convertIP() + "\",\"name\":\"" + name + "\",\"uiud\":\""+ uiud +"\",\"state\":[" + states[0] + "," + states[1] + "," + states[2] + "," + states[3] + "],\"dimm\":["
+        String data = "{\"type\":4, \"ip\":" + convertIP() + ",\"name\":\"" + name + "\",\"uiud\":\""+ uiud +"\",\"state\":[" + states[0] + "," + states[1] + "," + states[2] + "," + states[3] + "],\"dim\":["
                 + dims[0] + "," + dims[1] + "," + dims[2] + "," + dims[3] + "]}";
-        return data;
-    }
-
-    public static String SerializeDataToAws() {
-        String data = null;
-        if (ToggleLed == 1) {
-            data = "{\"state\":{\"desired\": {\"led\": " + ToggleLed + ", \"dimm\": [100, 100, 100, 100],\"state\": [1, 1, 1, 1]}}}";
-            ToggleLed = 0;
-        } else {
-            data = "{\"state\":{\"desired\": {\"led\": " + ToggleLed + ", \"dimm\": [100, 100, 100, 100],\"state\": [0, 0, 0, 0]}}}";
-            ToggleLed = 1;
-        }
         return data;
     }
 
@@ -113,15 +100,14 @@ public class JsonUtils {
         int led = device.getLed();
         if (led == 1) led = 0;
         else led = 1;
-        data = "{\"state\":{\"desired\": {\"led\": " + led + ", \"dimm\": [100, 100, 100, 100],\"state\": [" + states[0] + ", " + states[1] + ", " + states[2] + "," +
+        data = "{\"state\":{\"desired\": {\"led\": " + led + ", \"dim\": [100, 100, 100, 100],\"state\": [" + states[0] + ", " + states[1] + ", " + states[2] + "," +
                 states[3] + "]}}}";
         return data;
     }
 
-    public String InitialData(String ipInString) throws UnknownHostException {
-        String ip = IpConvert(ipInString);
+    public String InitialData(String uiud) throws UnknownHostException {
 
-        String data = "{\"type\":1,\"ip\":\"" + ip + "\",\"time\":" + (System.currentTimeMillis() / 1000) + " }";
+        String data = "{\"type\":1,\"ip\":" + convertIP() + ",\"time\":" + (System.currentTimeMillis() / 1000) + ",\"uiud\":\""+ uiud +"\" }";
         return data;
     }
 
@@ -142,29 +128,11 @@ public class JsonUtils {
         return data;
     }
 
-    public static String PairedData(String IP) throws UnknownHostException {
-        String ip = IpConvert(IP);
-        String data = "{\"type\":3,\"ip\":\"" + ip + "\"}";
-        return data;
-    }
-
-    private static String convertIP() throws UnknownHostException {
+    private static int convertIP() throws UnknownHostException {
         WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInfo = mWifi.getConnectionInfo();
         int ipAddress = wifiInfo.getIpAddress();
-        String IP = String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-        IP = IpConvert(IP);
-        return IP;
+        return ipAddress;
     }
 
-    private static String IpConvert(String ipInString) throws UnknownHostException {
-        InetAddress ip = InetAddress.getByName(ipInString);
-        String var = "";
-        byte[] bytes = ip.getAddress();
-        for (byte b : bytes) {
-            var = var + String.format("%03d.", (b & 0xFF));
-        }
-        var = var.substring(0, var.length() - 1);
-        return var;
-    }
 }

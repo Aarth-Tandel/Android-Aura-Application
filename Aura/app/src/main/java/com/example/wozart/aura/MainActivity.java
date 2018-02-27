@@ -49,6 +49,7 @@ import android.widget.Toast;
 
 import com.example.wozart.amazonaws.models.nosql.DevicesTableDO;
 import com.example.wozart.aura.activities.customization.CustomizationActivity;
+import com.example.wozart.aura.activities.sharing.SharingActivity;
 import com.example.wozart.aura.model.AuraSwitch;
 import com.example.wozart.aura.network.AwsPubSub;
 import com.example.wozart.aura.network.NsdClient;
@@ -66,13 +67,16 @@ import com.github.clans.fab.FloatingActionMenu;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import static com.example.wozart.aura.utilities.Constant.MAX_HOME;
 import static com.example.wozart.aura.utilities.Constant.NETWORK_SSID;
+import static com.example.wozart.aura.utilities.Constant.UNPAIRED;
 
 /***************************************************************************
  * File Name : MainActivity
@@ -95,8 +99,6 @@ public class MainActivity extends AppCompatActivity
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private NavigationView NavigationView;
-    private ImageView userProfilePicture;
-
     private TcpClient mTcpClient;
     private NsdClient Nsd;
     private DeviceUtils mDeviceUtils;
@@ -142,6 +144,8 @@ public class MainActivity extends AppCompatActivity
         mDb = dbHelper.getWritableDatabase();
         db.InsertBasicData(mDb);
 
+//        DeviceDbOperation deviceDbOperation = new DeviceDbOperation();
+//        deviceDbOperation.getAll(mDb);
         initializeTabs();
         initializeFab();
         initializeDiscovery();
@@ -151,7 +155,6 @@ public class MainActivity extends AppCompatActivity
     private void initializeDiscovery() {
         DeviceDbHelper dbHelper = new DeviceDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
-        db.InsertBasicData(mDb);
         mDeviceUtils = new DeviceUtils();
 
         Nsd = new NsdClient(this);
@@ -166,15 +169,17 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 for (final NsdServiceInfo service : Nsd.GetServiceInfo()) {
-                    JsonUtils mJsonUtils = new JsonUtils();
-                    String data = null;
                     try {
-                        data = mJsonUtils.InitialData(convertIP());
+                        JsonUtils mJsonUtils = new JsonUtils();
+                        String device = service.getServiceName().substring(service.getServiceName().length() - 6, service.getServiceName().length());
+                        String uiud = DeviceDbOperation.getUiud(mDb, device);
+                        if (uiud == null) uiud = Constant.UNPAIRED;
+                        new ConnectTask(mJsonUtils.InitialData(uiud), service.getHost().getHostAddress()).execute("");
+                        Log.i(LOG_TAG, "Initial data: " + mJsonUtils.InitialData(uiud) + " to " + service.getServiceName() + " IP: " + service.getHost().getHostAddress());
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
-                    new ConnectTask(data, service.getHost().getHostAddress()).execute("");
-                    Log.d(LOG_TAG, "Initial data: " + data + " to " + service.getServiceName() + "IP: " + service.getHost().getHostAddress());
+
                 }
             }
         }, 1000);
@@ -253,8 +258,8 @@ public class MainActivity extends AppCompatActivity
         final TextView userEmailTextView = (TextView) headerView.findViewById(R.id.tv_user_email);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        String userName = prefs.getString("USERNAME", "defaultStringIfNothingFound");
-        String email = prefs.getString("EMAIL", "defaultStringIfNothingFound");
+        final String userName = prefs.getString("USERNAME", "defaultStringIfNothingFound");
+        final String email = prefs.getString("EMAIL", "defaultStringIfNothingFound");
         String userProfilePicture = prefs.getString("PROFILE_PICTURE", "defaultStringIfNothingFound");
         final String userId = prefs.getString("ID", "NULL");
         if (!userId.equals("NULL"))
@@ -276,9 +281,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 if (isInternetWorking()) {
+                    //sqlOperationUserTable.sharedUser("aarth.996@gmail.com");
                     if (!userId.equals("NULL")) {
                         if (!sqlOperationUserTable.isUserAlreadyRegistered(userId)) {
-                            sqlOperationUserTable.insertUser(userId);
+                            sqlOperationUserTable.insertUser(userId, userName, email);
                         } else {
                             ArrayList<DevicesTableDO> devices = sqlOperationUserTable.getUserDevices(userId);
                             db.devicesFromAws(mDb, devices);
@@ -394,6 +400,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
 
         } else if (id == R.id.nav_share) {
+            Intent intent = new Intent(this, SharingActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_send) {
 
         }
@@ -519,14 +527,6 @@ public class MainActivity extends AppCompatActivity
         alert.show();
     }
 
-    private String convertIP() {
-        WifiManager mWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo wifiInfo = mWifi.getConnectionInfo();
-        int ipAddress = wifiInfo.getIpAddress();
-        return String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-    }
-
-
     private void addRooms() {
         final Boolean[] flag = {true};
         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
@@ -566,7 +566,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * AWS IoT Subscribe to shadow
+     * AWS IoT Subscribe to shadow broadcast receiver
      */
 
     @Override
@@ -670,37 +670,66 @@ public class MainActivity extends AppCompatActivity
                 JsonUtils mJsonUtils = new JsonUtils();
                 AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
 
-                if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(Constant.UNPAIRED)) {
-                    dummyDevice.setIP(Nsd.GetIP(dummyDevice.getName()));
-                    Snackbar.make(findViewById(R.id.mCordinateLayout), "New device " + dummyDevice.getName(), Snackbar.LENGTH_INDEFINITE)
-                            .setAction("ADD", new ConfigureListener(dummyDevice)).show();
-                }
-
-                if (dummyDevice.getUiud().equals(UIUD) && dummyDevice.getType() == 2) {
-                    if (mtoast != null)
-                        mtoast = null;
-                    Context context = getApplicationContext();
-                    CharSequence text = "Device Paired Successfully";
-                    int duration = Toast.LENGTH_SHORT;
-                    mtoast = Toast.makeText(context, text, duration);
-                    mtoast.show();
-
-                    db.AddDevice(mDb, ADD_NEW_DEVICE_TO, SELECTED_HOME, dummyDevice.getName(), UIUD, null);
-                    for (NsdServiceInfo x : Nsd.GetAllServices()) {
-                        //Find the match in services found and data received
-                        if (x.getServiceName().contains(dummyDevice.getName())) {
-                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), UIUD);
+                switch (dummyDevice.getType()) {
+                    case 1:
+                        if (dummyDevice.getDiscovery() == 0) {
+                            dummyDevice.setIP(Nsd.GetIP(dummyDevice.getName()));
+                            Snackbar.make(findViewById(R.id.mCordinateLayout), "New device " + dummyDevice.getName(), Snackbar.LENGTH_INDEFINITE)
+                                    .setAction("ADD", new ConfigureListener(dummyDevice)).show();
+                            return;
                         }
-                    }
-                }
 
-                if (dummyDevice.getType() == 1 && dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName()))) {
-                    for (NsdServiceInfo x : Nsd.GetAllServices()) {
-                        //Find the match in services found and data received
-                        if (x.getServiceName().contains(dummyDevice.getName())) {
-                            mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), DeviceDbOperation.getUiud(mDb, dummyDevice.getName()));
+                        if (dummyDevice.getError() == 1) {
+                            Snackbar.make(findViewById(R.id.mCordinateLayout), "Unauthorized access to " + dummyDevice.getName(), Snackbar.LENGTH_INDEFINITE).setAction("DISMISS", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                }
+                            }).show();
+                            return;
                         }
-                    }
+
+                        if (dummyDevice.getError() == 0) {
+                            for (NsdServiceInfo x : Nsd.GetAllServices()) {
+                                //Find the match in services found and data received
+                                if (x.getServiceName().contains(dummyDevice.getName())) {
+                                    mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), DeviceDbOperation.getUiud(mDb, dummyDevice.getName()));
+                                }
+                            }
+                            return;
+                        }
+                        return;
+
+                    case 2:
+                        if (dummyDevice.getError() == 0) {
+                            if (mtoast != null)
+                                mtoast = null;
+                            Context context = getApplicationContext();
+                            CharSequence text = "Device Paired Successfully";
+                            int duration = Toast.LENGTH_SHORT;
+                            mtoast = Toast.makeText(context, text, duration);
+                            mtoast.show();
+
+                            db.AddDevice(mDb, ADD_NEW_DEVICE_TO, SELECTED_HOME, dummyDevice.getName(), UIUD, null);
+                            for (NsdServiceInfo x : Nsd.GetAllServices()) {
+                                //Find the match in services found and data received
+                                if (x.getServiceName().contains(dummyDevice.getName())) {
+                                    mDeviceUtils.RegisterDevice(dummyDevice, x.getHost().getHostAddress(), UIUD);
+                                }
+                            }
+                            return;
+                        }
+
+                        if (dummyDevice.getError() == 1) {
+                            if (mtoast != null)
+                                mtoast = null;
+                            Context context = getApplicationContext();
+                            CharSequence text = "Wrong Device Pin";
+                            int duration = Toast.LENGTH_SHORT;
+                            mtoast = Toast.makeText(context, text, duration);
+                            mtoast.show();
+                            return;
+                        }
+                        return;
                 }
             }
         }

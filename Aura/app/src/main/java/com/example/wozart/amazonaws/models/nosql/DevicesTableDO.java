@@ -15,9 +15,11 @@ import java.util.Set;
 
 public class DevicesTableDO {
     private String _deviceId;
+    private String _home;
     private List<String> _loads;
-    private Map<String, String> _master;
+    private String _master;
     private String _name;
+    private String _room;
     private Map<String, String> _slave;
     private String _thing;
     private String _uIUD;
@@ -31,6 +33,14 @@ public class DevicesTableDO {
     public void setDeviceId(final String _deviceId) {
         this._deviceId = _deviceId;
     }
+    @DynamoDBAttribute(attributeName = "Home")
+    public String getHome() {
+        return _home;
+    }
+
+    public void setHome(final String _home) {
+        this._home = _home;
+    }
     @DynamoDBAttribute(attributeName = "Loads")
     public List<String> getLoads() {
         return _loads;
@@ -40,11 +50,11 @@ public class DevicesTableDO {
         this._loads = _loads;
     }
     @DynamoDBAttribute(attributeName = "Master")
-    public Map<String, String> getMaster() {
+    public String getMaster() {
         return _master;
     }
 
-    public void setMaster(final Map<String, String> _master) {
+    public void setMaster(final String _master) {
         this._master = _master;
     }
     @DynamoDBAttribute(attributeName = "Name")
@@ -54,6 +64,14 @@ public class DevicesTableDO {
 
     public void setName(final String _name) {
         this._name = _name;
+    }
+    @DynamoDBAttribute(attributeName = "Room")
+    public String getRoom() {
+        return _room;
+    }
+
+    public void setRoom(final String _room) {
+        this._room = _room;
     }
     @DynamoDBAttribute(attributeName = "Slave")
     public Map<String, String> getSlave() {

@@ -17,7 +17,7 @@
     <!--Facebook Application-->
     <string name="facebook_app_id">160586947836430</string>
     <string name="fb_login_protocol_scheme">fb160586947836430</string>
-    <string name="title_activity_sharing">SharingActivity</string>
+    <string name="title_activity_sharing">Share</string>
 
 
 </resources>
