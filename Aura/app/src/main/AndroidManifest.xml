@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.wozart.aura">
+    package="com.wozart.aura">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission
+        android:name="android.permission.GET_ACCOUNTS"
+        android:maxSdkVersion="22" />
+    <uses-permission
+        android:name="android.permission.GET_ACCOUNTS"
+        android:maxSdkVersion="22" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -16,18 +22,18 @@
         android:theme="@style/AppTheme">
 
         <!-- Services -->
-        <service android:name=".network.AwsPubSub" />
-        <service android:name=".network.TcpServer" />
+        <service android:name=".aura.network.AwsPubSub" />
+        <service android:name=".aura.network.TcpServer" />
 
         <!-- Main Activity -->
         <activity
-            android:name=".MainActivity"
+            android:name=".aura.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <!-- Splash Activity -->
         <activity
-            android:name=".activities.SplashActivity"
+            android:name=".aura.activities.SplashActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,7 +44,7 @@
 
         <!-- Login Activity -->
         <activity
-            android:name=".activities.loginActivity.LoginActivity"
+            android:name=".aura.activities.loginActivity.LoginActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <!-- Facebook Meta Data -->
@@ -63,15 +69,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.rooms.RoomActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".aura.activities.rooms.RoomActivity"
+            android:parentActivityName=".aura.MainActivity" />
         <activity
-            android:name=".activities.customization.CustomizationActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".aura.activities.customization.CustomizationActivity"
+            android:parentActivityName=".aura.MainActivity" />
         <activity
-            android:name=".activities.sharing.SharingActivity"
+            android:name=".aura.activities.sharing.SharingActivity"
             android:label="@string/title_activity_sharing"
-            android:parentActivityName=".MainActivity"/>
+            android:parentActivityName=".aura.MainActivity" />
+        <activity android:name=".aura.activities.AndroidLoginActivity.GoogleLoginActivity"></activity>
     </application>
 
 </manifest>

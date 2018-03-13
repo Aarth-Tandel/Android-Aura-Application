@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:id="@+id/mCordinateLayout"
     android:layout_height="match_parent"
-    tools:context="com.example.wozart.aura.activities.sharing.SharingActivity">
+    tools:context="com.example.wozart.aura.com.wozart.wozart.aura.activities.sharing.SharingActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"

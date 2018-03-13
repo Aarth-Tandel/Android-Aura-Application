@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:id="@+id/mCordinateLayout"
-    tools:context="com.example.wozart.aura.MainActivity">
+    tools:context="com.example.wozart.aura.com.wozart.wozart.aura.MainActivity">
 
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"

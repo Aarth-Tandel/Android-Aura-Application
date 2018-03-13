@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.wozart.aura.activities.sharing.SharingActivity"
+    tools:context="com.example.wozart.aura.com.wozart.wozart.aura.activities.sharing.SharingActivity"
     tools:showIn="@layout/activity_sharing">
 
 </android.support.constraint.ConstraintLayout>
