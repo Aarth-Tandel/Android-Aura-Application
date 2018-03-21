@@ -27,8 +27,8 @@ import android.widget.Toast;
 
 import com.wozart.aura.aura.MainActivity;
 import com.wozart.aura.R;
-import com.wozart.aura.aura.model.AuraSwitch;
-import com.wozart.aura.aura.model.AwsState;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
+import com.wozart.aura.aura.model.Aws.AwsState;
 import com.wozart.aura.aura.network.NsdClient;
 import com.wozart.aura.aura.network.TcpClient;
 import com.wozart.aura.aura.sqlLite.device.DeviceDbHelper;

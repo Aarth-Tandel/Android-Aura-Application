@@ -1,4 +1,4 @@
-package com.wozart.aura.aura.model;
+package com.wozart.aura.aura.model.AuraSwitch;
 
 import com.wozart.aura.aura.utilities.Constant;
 
@@ -40,6 +40,7 @@ public class AuraSwitch {
     private int k = -1;
     private int c = -1;
     private int p = -1;
+    private AuraSwitchLoad load = new AuraSwitchLoad();
 
     public AuraSwitch() {
     }
@@ -96,10 +97,9 @@ public class AuraSwitch {
 
     public int getRegionFlag(){return this.r;}
 
-    public int getPercentage(){return this.p;}
+    public int getDiscovery(){return dsy;}
 
     public void setStates(int[] state){this.state = state;}
-
 
     public void setDims(int[] dimm){this.dim = dimm;}
 
@@ -162,5 +162,7 @@ public class AuraSwitch {
 
     public void setId(String id) {this.id = id;}
 
-    public int getDiscovery(){return dsy;}
+    public String getDefaultLoad(){
+        return load.getDefaultLoads();
+    }
 }

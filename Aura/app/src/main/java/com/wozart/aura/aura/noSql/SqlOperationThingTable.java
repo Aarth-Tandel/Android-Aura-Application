@@ -40,25 +40,28 @@ public class SqlOperationThingTable {
                     .dynamoDBClient(dynamoDBClient)
                     .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                     .build();
+
+            ThingTableDO availableDevice = null;
+            Map<String, AttributeValue> availableThings = new HashMap<>();
+            availableThings.put(":val1", new AttributeValue().withN("1"));
+
+            DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
+                    .withFilterExpression("Available = :val1").withExpressionAttributeValues(availableThings);
+
+            List<ThingTableDO> scanResult = dynamoDBMapper.scan(ThingTableDO.class, scanExpression);
+            if (scanResult != null) {
+                if (scanResult.isEmpty()) {
+                    Log.e(LOG_TAG, "No Devices available on AWS: " + scanResult);
+                    return null;
+                } else {
+                    availableDevice = scanResult.get(0);
+                    Log.d(LOG_TAG, "Received Thing Name: " + availableDevice.getThing());
+                }
+            }
+            return availableDevice;
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error : " + e);
-        }
-
-        ThingTableDO availableDevice;
-        Map<String, AttributeValue> availableThings = new HashMap<>();
-        availableThings.put(":val1", new AttributeValue().withN("1"));
-
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("Available = :val1").withExpressionAttributeValues(availableThings);
-
-        List<ThingTableDO> scanResult = dynamoDBMapper.scan(ThingTableDO.class, scanExpression);
-        if (scanResult.isEmpty()) {
-            Log.e(LOG_TAG, "No Devices available on AWS: " + scanResult);
             return null;
-        } else {
-            availableDevice = scanResult.get(0);
-            Log.d(LOG_TAG, "Received Thing Name: " + availableDevice.getThing());
-            return availableDevice;
         }
     }
 

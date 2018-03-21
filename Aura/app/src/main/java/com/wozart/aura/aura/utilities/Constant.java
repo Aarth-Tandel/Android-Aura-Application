@@ -20,7 +20,6 @@ import com.wozart.aura.aura.sqlLite.device.DeviceContract;
 
 public class Constant {
     //User's and Device Constants
-    public static String ID_TOEKN;
     public static String IDENTITY_ID;
     public static String USERNAME = null;
     public static final String CLOSED_CONNECTION = "client_closed_connection";
@@ -39,16 +38,12 @@ public class Constant {
     public static final String INSERT_ROOMS = "select " + DeviceContract.DeviceEntry.HOME_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.ROOM_NAME + " = ?";
     public static final String CRUD_ROOM = DeviceContract.DeviceEntry.HOME_NAME + " =? and " + DeviceContract.DeviceEntry.ROOM_NAME + " =? ";
     public static final String GET_DEVICES_IN_ROOM = "select " + DeviceContract.DeviceEntry.DEVICE_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.HOME_NAME + " = ? and " + DeviceContract.DeviceEntry.ROOM_NAME + " =?";
-    public static final String GET_LOADS = "select " + DeviceContract.DeviceEntry.LOAD_1 + ", " + DeviceContract.DeviceEntry.LOAD_2 + ", " + DeviceContract.DeviceEntry.LOAD_3 + ", " + DeviceContract.DeviceEntry.LOAD_4 + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.DEVICE_NAME + " = ?";
+    public static final String GET_LOADS_JSON = "select " + DeviceContract.DeviceEntry.LOAD + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.DEVICE_NAME + " = ?";
     public static final String INSERT_DEVICES = "select " + DeviceContract.DeviceEntry.DEVICE_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME;
     public static final String CHECK_DEVICES = "select " + DeviceContract.DeviceEntry.DEVICE_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.DEVICE_NAME + " = ?";
     public static final String GET_THING_NAME = "select " + DeviceContract.DeviceEntry.THING_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME;
     public static final String GET_DEVICES_FOR_THING = "select " + DeviceContract.DeviceEntry.DEVICE_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.THING_NAME + " = ?";
     public static final String UPDATE_DEVICE = DeviceContract.DeviceEntry.DEVICE_NAME + "=?";
-    public static final String UPDATE_LOAD1_NAME = DeviceContract.DeviceEntry.HOME_NAME + " =? and " + DeviceContract.DeviceEntry.ROOM_NAME + " =? and " + DeviceContract.DeviceEntry.LOAD_1 + " =?";
-    public static final String UPDATE_LOAD2_NAME = DeviceContract.DeviceEntry.HOME_NAME + " =? and " + DeviceContract.DeviceEntry.ROOM_NAME + " =? and " + DeviceContract.DeviceEntry.LOAD_2 + " =?";
-    public static final String UPDATE_LOAD3_NAME = DeviceContract.DeviceEntry.HOME_NAME + " =? and " + DeviceContract.DeviceEntry.ROOM_NAME + " =? and " + DeviceContract.DeviceEntry.LOAD_3 + " =?";
-    public static final String UPDATE_LOAD4_NAME = DeviceContract.DeviceEntry.HOME_NAME + " =? and " + DeviceContract.DeviceEntry.ROOM_NAME + " =? and " + DeviceContract.DeviceEntry.LOAD_4 + " =?";
     public static final String UPDATE_THING_NAME = DeviceContract.DeviceEntry.DEVICE_NAME + "=?";
     public static final String GET_ROOM_FOR_DEVICE = "select " + DeviceContract.DeviceEntry.ROOM_NAME + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.DEVICE_NAME + " =?";
     public static final String DELETE_DEVICE = DeviceContract.DeviceEntry.DEVICE_NAME + " = ?";

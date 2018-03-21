@@ -12,7 +12,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.wozart.aura.amazonaws.models.nosql.DevicesTableDO;
 import com.wozart.aura.amazonaws.models.nosql.UserTableDO;
 import com.wozart.aura.aura.activities.sharing.SharingModel;
-import com.wozart.aura.aura.model.SharedAccess;
+import com.wozart.aura.aura.model.Aws.SharedAccess;
 import com.wozart.aura.aura.sqlLite.device.DeviceDbHelper;
 import com.wozart.aura.aura.sqlLite.device.DeviceDbOperation;
 import com.wozart.aura.aura.utilities.Constant;

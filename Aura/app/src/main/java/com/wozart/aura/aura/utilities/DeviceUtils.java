@@ -1,7 +1,7 @@
 package com.wozart.aura.aura.utilities;
 
-import com.wozart.aura.aura.model.AuraSwitch;
-import com.wozart.aura.aura.model.AwsState;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
+import com.wozart.aura.aura.model.Aws.AwsState;
 
 import java.util.ArrayList;
 

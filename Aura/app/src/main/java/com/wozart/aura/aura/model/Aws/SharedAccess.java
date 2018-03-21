@@ -1,4 +1,4 @@
-package com.wozart.aura.aura.model;
+package com.wozart.aura.aura.model.Aws;
 
 /**
  * Created by wozart on 20/02/18.

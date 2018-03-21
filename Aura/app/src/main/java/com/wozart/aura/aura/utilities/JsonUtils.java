@@ -5,9 +5,9 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-import com.wozart.aura.aura.model.AuraSwitch;
-import com.wozart.aura.aura.model.AwsDataModel;
-import com.wozart.aura.aura.model.AwsState;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
+import com.wozart.aura.aura.model.Aws.AwsDataModel;
+import com.wozart.aura.aura.model.Aws.AwsState;
 import com.google.gson.Gson;
 
 import java.net.UnknownHostException;

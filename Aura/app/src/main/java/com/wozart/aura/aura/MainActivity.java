@@ -10,8 +10,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiConfiguration;
@@ -33,14 +31,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -50,12 +45,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.crashlytics.android.Crashlytics;
 import com.wozart.aura.amazonaws.models.nosql.DevicesTableDO;
 import com.wozart.aura.R;
 import com.wozart.aura.aura.activities.customization.CustomizationActivity;
 import com.wozart.aura.aura.activities.sharing.SharingActivity;
-import com.wozart.aura.aura.model.AuraSwitch;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
 import com.wozart.aura.aura.network.AwsPubSub;
 import com.wozart.aura.aura.network.NsdClient;
 import com.wozart.aura.aura.network.TcpClient;
@@ -707,7 +701,7 @@ public class MainActivity extends AppCompatActivity
                             mtoast = Toast.makeText(context, text, duration);
                             mtoast.show();
 
-                            db.AddDevice(mDb, ADD_NEW_DEVICE_TO, SELECTED_HOME, dummyDevice.getName(), UIUD);
+                            db.AddDevice(mDb, ADD_NEW_DEVICE_TO, SELECTED_HOME, dummyDevice, UIUD);
                             for (NsdServiceInfo x : Nsd.GetAllServices()) {
                                 //Find the match in services found and data received
                                 if (x.getServiceName().contains(dummyDevice.getName())) {

@@ -1,4 +1,4 @@
-package com.wozart.aura.aura.model;
+package com.wozart.aura.aura.model.Aws;
 
 /***************************************************************************
  * File Name : AwsDataModel

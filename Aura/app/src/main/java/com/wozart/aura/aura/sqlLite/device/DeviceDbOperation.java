@@ -6,10 +6,13 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.wozart.aura.amazonaws.models.nosql.DevicesTableDO;
 import com.wozart.aura.aura.activities.customization.CustomizationDevices;
 import com.wozart.aura.aura.activities.sharing.SharingAdapter;
 import com.wozart.aura.aura.activities.sharing.SharingModel;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitchLoad;
 import com.wozart.aura.aura.utilities.Constant;
 
 import java.util.ArrayList;
@@ -24,7 +27,7 @@ import static com.wozart.aura.aura.utilities.Constant.GET_ALL_HOME;
 import static com.wozart.aura.aura.utilities.Constant.GET_ALL_SHARED_DEVICES_FOR_HOME;
 import static com.wozart.aura.aura.utilities.Constant.GET_DEVICES_FOR_THING;
 import static com.wozart.aura.aura.utilities.Constant.GET_DEVICES_IN_ROOM;
-import static com.wozart.aura.aura.utilities.Constant.GET_LOADS;
+import static com.wozart.aura.aura.utilities.Constant.GET_LOADS_JSON;
 import static com.wozart.aura.aura.utilities.Constant.GET_ROOMS;
 import static com.wozart.aura.aura.utilities.Constant.GET_ROOM_FOR_DEVICE;
 import static com.wozart.aura.aura.utilities.Constant.GET_THING_NAME;
@@ -33,10 +36,6 @@ import static com.wozart.aura.aura.utilities.Constant.INSERT_DEVICES;
 import static com.wozart.aura.aura.utilities.Constant.INSERT_INITIAL_DATA;
 import static com.wozart.aura.aura.utilities.Constant.INSERT_ROOMS;
 import static com.wozart.aura.aura.utilities.Constant.UPDATE_DEVICE;
-import static com.wozart.aura.aura.utilities.Constant.UPDATE_LOAD1_NAME;
-import static com.wozart.aura.aura.utilities.Constant.UPDATE_LOAD2_NAME;
-import static com.wozart.aura.aura.utilities.Constant.UPDATE_LOAD3_NAME;
-import static com.wozart.aura.aura.utilities.Constant.UPDATE_LOAD4_NAME;
 import static com.wozart.aura.aura.utilities.Constant.UPDATE_THING_NAME;
 
 /***************************************************************************
@@ -171,7 +170,7 @@ public class DeviceDbOperation {
         cursor.close();
     }
 
-    public void AddDevice(SQLiteDatabase db, String room, String home, String device, String uiud) {
+    public void AddDevice(SQLiteDatabase db, String room, String home, AuraSwitch device, String uiud) {
 
         String thing = null, access = "master";
         ArrayList<String> devicesDuplicate = new ArrayList<>();
@@ -187,10 +186,11 @@ public class DeviceDbOperation {
             ContentValues cv = new ContentValues();
             cv.put(DeviceContract.DeviceEntry.ROOM_NAME, room);
             cv.put(DeviceContract.DeviceEntry.HOME_NAME, home);
-            cv.put(DeviceContract.DeviceEntry.DEVICE_NAME, device);
+            cv.put(DeviceContract.DeviceEntry.DEVICE_NAME, device.getName());
             cv.put(DeviceContract.DeviceEntry.UIUD, uiud);
             cv.put(DeviceContract.DeviceEntry.THING_NAME, thing);
             cv.put(DeviceContract.DeviceEntry.ACCESS, access);
+            cv.put(DeviceContract.DeviceEntry.LOAD, device.getDefaultLoad());
 
             try {
                 db.beginTransaction();
@@ -207,7 +207,7 @@ public class DeviceDbOperation {
 
         for (String x : devicesDuplicate) {
             if (x.equals(device)) {
-                updateAlreadyAddedDevice(db, device, uiud);
+                updateAlreadyAddedDevice(db, device.getName(), uiud);
                 flag = false;
             }
         }
@@ -216,10 +216,11 @@ public class DeviceDbOperation {
             ContentValues cv = new ContentValues();
             cv.put(DeviceContract.DeviceEntry.ROOM_NAME, room);
             cv.put(DeviceContract.DeviceEntry.HOME_NAME, home);
-            cv.put(DeviceContract.DeviceEntry.DEVICE_NAME, device);
+            cv.put(DeviceContract.DeviceEntry.DEVICE_NAME, device.getName());
             cv.put(DeviceContract.DeviceEntry.UIUD, uiud);
             cv.put(DeviceContract.DeviceEntry.THING_NAME, thing);
             cv.put(DeviceContract.DeviceEntry.ACCESS, access);
+            cv.put(DeviceContract.DeviceEntry.LOAD, device.getDefaultLoad());
 
             try {
                 db.beginTransaction();
@@ -283,15 +284,26 @@ public class DeviceDbOperation {
 
     public ArrayList<String> GetLoads(SQLiteDatabase db, String device) {
         String[] params = new String[]{device};
-        Cursor cursor = db.rawQuery(GET_LOADS, params);
+        Cursor cursor = db.rawQuery(GET_LOADS_JSON, params);
+        String jsonLoad = null;
         ArrayList<String> loads = new ArrayList<>();
         while (cursor.moveToNext()) {
-            loads.add(cursor.getString(0));
-            loads.add(cursor.getString(1));
-            loads.add(cursor.getString(2));
-            loads.add(cursor.getString(3));
-
+            jsonLoad = cursor.getString(0);
         }
+        if (jsonLoad != null) {
+            try {
+                Gson gson = new Gson();
+                AuraSwitchLoad auraSwitchLoad;
+                auraSwitchLoad = gson.fromJson(jsonLoad, AuraSwitchLoad.class);
+                loads.add(auraSwitchLoad.getLoad_1().getName());
+                loads.add(auraSwitchLoad.getLoad_2().getName());
+                loads.add(auraSwitchLoad.getLoad_3().getName());
+                loads.add(auraSwitchLoad.getLoad_4().getName());
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Error in getting loads" + e);
+            }
+        }
+        cursor.close();
         return loads;
     }
 
@@ -350,13 +362,13 @@ public class DeviceDbOperation {
         return uiud;
     }
 
-    public ArrayList<SharingModel> getSharedDevices(SQLiteDatabase db, String home){
+    public ArrayList<SharingModel> getSharedDevices(SQLiteDatabase db, String home) {
         String[] params = new String[]{home};
-        Cursor cursor =db.rawQuery(GET_ALL_SHARED_DEVICES_FOR_HOME, params);
+        Cursor cursor = db.rawQuery(GET_ALL_SHARED_DEVICES_FOR_HOME, params);
         ArrayList<SharingModel> sharedDevices = new ArrayList<>();
-        while(cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             SharingModel device = new SharingModel();
-            if(cursor.getString(0) != null){
+            if (cursor.getString(0) != null) {
                 device.setName(cursor.getString(0));
                 device.setMaster(cursor.getString(1));
                 device.setDeviceId(cursor.getString(2));
@@ -415,24 +427,24 @@ public class DeviceDbOperation {
     public void updateLoadName(SQLiteDatabase db, String oldName, String home, String room, int loadNumber, String load) {
         String[] params = new String[]{home, room, oldName};
         ContentValues values = new ContentValues();
-        switch (loadNumber) {
-            case 0:
-                values.put(DeviceContract.DeviceEntry.LOAD_1, load);
-                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD1_NAME, params);
-                break;
-            case 1:
-                values.put(DeviceContract.DeviceEntry.LOAD_2, load);
-                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD2_NAME, params);
-                break;
-            case 2:
-                values.put(DeviceContract.DeviceEntry.LOAD_3, load);
-                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD3_NAME, params);
-                break;
-            case 3:
-                values.put(DeviceContract.DeviceEntry.LOAD_4, load);
-                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD4_NAME, params);
-                break;
-        }
+//        switch (loadNumber) {
+//            case 0:
+//                values.put(DeviceContract.DeviceEntry.LOAD_1, load);
+//                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD1_NAME, params);
+//                break;
+//            case 1:
+//                values.put(DeviceContract.DeviceEntry.LOAD_2, load);
+//                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD2_NAME, params);
+//                break;
+//            case 2:
+//                values.put(DeviceContract.DeviceEntry.LOAD_3, load);
+//                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD3_NAME, params);
+//                break;
+//            case 3:
+//                values.put(DeviceContract.DeviceEntry.LOAD_4, load);
+//                db.update(DeviceContract.DeviceEntry.TABLE_NAME, values, UPDATE_LOAD4_NAME, params);
+//                break;
+//        }
     }
 
     public void removeDevice(SQLiteDatabase db, String device) {
@@ -444,8 +456,8 @@ public class DeviceDbOperation {
         db.delete(DeviceContract.DeviceEntry.TABLE_NAME, CRUD_ROOM, new String[]{home, room});
     }
 
-    public void deleteHome(SQLiteDatabase db, String home){
+    public void deleteHome(SQLiteDatabase db, String home) {
         String[] params = new String[]{home};
-        db.delete(DeviceContract.DeviceEntry.TABLE_NAME,DELETE_HOME,params);
+        db.delete(DeviceContract.DeviceEntry.TABLE_NAME, DELETE_HOME, params);
     }
 }

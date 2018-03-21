@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DeviceDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "device.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public DeviceDbHelper (Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -22,10 +22,7 @@ public class DeviceDbHelper extends SQLiteOpenHelper {
                 DeviceContract.DeviceEntry.TABLE_NAME + " (" +
                 DeviceContract.DeviceEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 DeviceContract.DeviceEntry.DEVICE_NAME + " TEXT, " +
-                DeviceContract.DeviceEntry.LOAD_1 + " TEXT DEFAULT 'Light', " +
-                DeviceContract.DeviceEntry.LOAD_2 + " TEXT DEFAULT 'Lamp', " +
-                DeviceContract.DeviceEntry.LOAD_3 + " TEXT DEFAULT 'Bulb', " +
-                DeviceContract.DeviceEntry.LOAD_4 + " TEXT DEFAULT 'Switch', " +
+                DeviceContract.DeviceEntry.LOAD + " TEXT, " +
                 DeviceContract.DeviceEntry.HOME_NAME + " TEXT, " +
                 DeviceContract.DeviceEntry.ROOM_NAME + " TEXT DEFAULT 'Hall', " +
                 DeviceContract.DeviceEntry.THING_NAME + " TEXT, " +

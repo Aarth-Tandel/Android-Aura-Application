@@ -28,7 +28,7 @@ import android.widget.Toast;
 
 import com.wozart.aura.amazonaws.models.nosql.ThingTableDO;
 import com.wozart.aura.R;
-import com.wozart.aura.aura.model.AuraSwitch;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
 import com.wozart.aura.aura.network.AwsPubSub;
 import com.wozart.aura.aura.network.NsdClient;
 import com.wozart.aura.aura.network.TcpClient;

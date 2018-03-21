@@ -4,7 +4,7 @@ import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 
-import com.wozart.aura.aura.model.AuraSwitch;
+import com.wozart.aura.aura.model.AuraSwitch.AuraSwitch;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;

@@ -38,12 +38,12 @@ dependencies {
     implementation 'com.facebook.android:facebook-android-sdk:4.31.0'
 
     //AWS
-    compile('com.amazonaws:aws-android-sdk-mobile-client:2.6.7@aar') { transitive = true; }
-    compile 'com.amazonaws:aws-android-sdk-pinpoint:2.6.16'
+    compile('com.amazonaws:aws-android-sdk-mobile-client:2.6.+@aar') { transitive = true; }
+    compile 'com.amazonaws:aws-android-sdk-pinpoint:2.6.+'
     compile 'com.android.support:multidex:1.0.3'
-    compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.16'
-    compile 'com.amazonaws:aws-android-sdk-iot:2.6.16'
-    compile 'com.amazonaws:aws-android-sdk-core:2.6.16'
+    compile 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.+'
+    compile 'com.amazonaws:aws-android-sdk-iot:2.6.+'
+    compile 'com.amazonaws:aws-android-sdk-core:2.6.+'
     //noinspection GradleCompatible,GradleCompatible
     compile 'com.android.support:support-v4:26.1.0'
     compile ('com.amazonaws:aws-android-sdk-auth-userpools:2.6.+@aar') { transitive = true; }
