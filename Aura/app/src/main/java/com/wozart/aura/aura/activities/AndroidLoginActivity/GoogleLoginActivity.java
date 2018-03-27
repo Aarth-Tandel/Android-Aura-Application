@@ -199,10 +199,14 @@ public class GoogleLoginActivity extends AppCompatActivity implements
 
     private void updateUI(FirebaseUser account) {
         if (account != null) {
+            String personId = null;
+            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+            if (acct != null) {
+                personId = acct.getId();
+            }
 
             String personName = account.getDisplayName();
             String personEmail = account.getEmail();
-            String personId = account.getUid();
             String personPhoto = account.getPhotoUrl().toString();
 
             SharedPreferences.Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(GoogleLoginActivity.this).edit();
