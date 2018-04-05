@@ -39,6 +39,7 @@ import com.wozart.aura.aura.sqlLite.device.DeviceDbHelper;
 import com.wozart.aura.aura.sqlLite.device.DeviceDbOperation;
 import com.wozart.aura.aura.utilities.Constant;
 import com.wozart.aura.aura.utilities.DeviceUtils;
+import com.wozart.aura.aura.utilities.Encryption;
 import com.wozart.aura.aura.utilities.JsonUtils;
 
 import java.io.IOException;
@@ -297,9 +298,6 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
 
         protected void onProgressUpdate(String... message) {
 
-            JsonUtils mJsonUtils = new JsonUtils();
-            final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
-            Log.i(LOG_TAG, "Received Data: " + message[0]);
             if (message[0].equals(Constant.SERVER_NOT_REACHABLE)) {
                 if (mtoast != null)
                     mtoast = null;
@@ -310,6 +308,10 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 mtoast = Toast.makeText(context, text, duration);
                 mtoast.show();
             } else {
+                String decryptedData = Encryption.denryptMessage(message[0]);
+                JsonUtils mJsonUtils = new JsonUtils();
+                final AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(decryptedData);
+                Log.i(LOG_TAG, "Received Data: " + decryptedData);
                 switch (dummyDevice.getType()) {
                     case 1:
                         if (dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName())) && dummyDevice.getAWSConfiguration() == 1) {

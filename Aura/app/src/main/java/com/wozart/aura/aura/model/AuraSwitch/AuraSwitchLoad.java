@@ -24,7 +24,7 @@ public class AuraSwitchLoad {
             "    \"dimmable\": true" +
             "  }," +
             "  \"load_4\": {" +
-            "    \"name\": \"Light\"," +
+            "    \"name\": \"Switch\"," +
             "    \"dimmable\": false" +
             "  }" +
             "}";

@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.wozart.aura.aura.utilities.Encryption;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,14 +103,13 @@ public class TcpServer extends Service {
 
         @Override
         protected void onPostExecute(String s) {
-
-
         }
     }
 
     private void sendMessageToActivity(String msg) {
+        String data = Encryption.denryptMessage(msg);
         Intent intent = new Intent("intentKey");
-        intent.putExtra("key", msg);
+        intent.putExtra("key", data);
         LocalBroadcastManager.getInstance(TcpServer.this).sendBroadcast(intent);
     }
 }

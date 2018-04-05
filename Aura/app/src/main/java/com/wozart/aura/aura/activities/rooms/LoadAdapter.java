@@ -37,6 +37,7 @@ import com.wozart.aura.aura.sqlLite.favourite.FavouriteDbHelper;
 import com.wozart.aura.aura.sqlLite.favourite.FavouriteDbOperation;
 import com.wozart.aura.aura.utilities.Constant;
 import com.wozart.aura.aura.utilities.DeviceUtils;
+import com.wozart.aura.aura.utilities.Encryption;
 import com.wozart.aura.aura.utilities.JsonUtils;
 
 import java.net.UnknownHostException;
@@ -271,9 +272,10 @@ public class LoadAdapter extends RecyclerView.Adapter<LoadAdapter.MyViewHolder> 
                 mtoast = Toast.makeText(context, text, duration);
                 mtoast.show();
             } else {
-                Log.i(LOG_TAG, "Data Received : " + message[0]);
+                String decryptedData = Encryption.denryptMessage(message[0]);
+                Log.i(LOG_TAG, "Data Received : " + decryptedData);
                 JsonUtils mJsonUtils = new JsonUtils();
-                AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
+                AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(decryptedData);
 
                 if (dummyDevice.getType() == 4) {
                     updateStates(dummyDevice.getStates(), dummyDevice.getName());

@@ -3,6 +3,7 @@ package com.wozart.aura.aura.network;
 import android.util.Log;
 
 import com.wozart.aura.aura.utilities.Constant;
+import com.wozart.aura.aura.utilities.Encryption;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -83,7 +84,7 @@ public class TcpClient {
     public void run(String data, String ip) {
 
         mRun = true;
-
+        String encryptedData = Encryption.enryptMessage(data);
         try {
             //here you must put your computer's IP address.
             InetAddress serverAddr = InetAddress.getByName(ip);
@@ -103,8 +104,8 @@ public class TcpClient {
                 //receives the message which the server sends back
                 mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // send login name
-                sendMessage(data);
-                Log.i("TCP Cleint","TCP TX Data : " + data);
+                sendMessage(encryptedData);
+                Log.i("TCP Cleint","TCP TX Data : " + encryptedData);
                 //in this while the client listens for the messages sent by the server
                 int count = 0;
                 boolean messageFlag = false;

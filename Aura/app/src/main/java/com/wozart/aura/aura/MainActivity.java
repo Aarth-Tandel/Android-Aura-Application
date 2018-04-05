@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity
         DeviceDbHelper dbHelper = new DeviceDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
         db.InsertBasicData(mDb);
+        db.getAll(mDb);
 
         initializeTabs();
         initializeFab();
@@ -658,9 +659,10 @@ public class MainActivity extends AppCompatActivity
                 mtoast = Toast.makeText(context, text, duration);
                 mtoast.show();
             } else {
-                Log.i(LOG_TAG, "Data Received : " + message[0]);
+                String decryptedData = Encryption.denryptMessage(message[0]);
+                Log.i(LOG_TAG, "Data Received : " + decryptedData);
                 JsonUtils mJsonUtils = new JsonUtils();
-                AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(message[0]);
+                AuraSwitch dummyDevice = mJsonUtils.DeserializeTcp(decryptedData);
 
                 switch (dummyDevice.getType()) {
                     case 1:
