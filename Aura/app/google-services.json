@@ -1,39 +1,27 @@
 {
   "project_info": {
-    "project_number": "929748901585",
-    "firebase_url": "https://wozart-technolog-1520318075024.firebaseio.com",
-    "project_id": "wozart-technolog-1520318075024",
-    "storage_bucket": "wozart-technolog-1520318075024.appspot.com"
+    "project_number": "719146577619",
+    "firebase_url": "https://wozart-technologies.firebaseio.com",
+    "project_id": "wozart-technologies",
+    "storage_bucket": "wozart-technologies.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:929748901585:android:bfc99baa283b70f9",
+        "mobilesdk_app_id": "1:719146577619:android:bfc99baa283b70f9",
         "android_client_info": {
           "package_name": "com.wozart.aura"
         }
       },
       "oauth_client": [
         {
-          "client_id": "929748901585-rih56dkh16tjvoriplodd8332s6brobu.apps.googleusercontent.com",
+          "client_id": "719146577619-0b6307lbg7gukgmg2mjl4ti4gmpb6f0p.apps.googleusercontent.com",
           "client_type": 3
-        },
-        {
-          "client_id": "929748901585-1oqsgea13j23aq9h3oar7g6lgs2ke20f.apps.googleusercontent.com",
-          "client_type": 3
-        },
-        {
-          "client_id": "929748901585-t76d2pc222d31rn9taaagvuhn2ldbgrr.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.wozart.aura",
-            "certificate_hash": "790496aed21416cd1eb53bb6ae146aa786ddf0b8"
-          }
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAmjLxgN5yGXMCK1alCKiFGYsFVQZkUON0"
+          "current_key": "AIzaSyA8y22MLfKH8X36Xr2gdgcv7UA4nc1IPhE"
         }
       ],
       "services": {
@@ -41,13 +29,8 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "929748901585-rih56dkh16tjvoriplodd8332s6brobu.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2
