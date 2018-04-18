@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "719146577619-q3iockntkc7sb2seajuhk2f17ghec3cf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wozart.aura",
+            "certificate_hash": "b308cc1d0d1eb3bdcd345dd5b5cd11ec56000549"
+          }
+        },
+        {
           "client_id": "719146577619-0b6307lbg7gukgmg2mjl4ti4gmpb6f0p.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "719146577619-0b6307lbg7gukgmg2mjl4ti4gmpb6f0p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2

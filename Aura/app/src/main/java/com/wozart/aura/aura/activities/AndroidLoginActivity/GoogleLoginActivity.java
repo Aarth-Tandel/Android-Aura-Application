@@ -67,7 +67,7 @@ public class GoogleLoginActivity extends AppCompatActivity implements
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestIdToken("929748901585-1oqsgea13j23aq9h3oar7g6lgs2ke20f.apps.googleusercontent.com")
+                .requestIdToken("719146577619-0b6307lbg7gukgmg2mjl4ti4gmpb6f0p.apps.googleusercontent.com")
                 .requestId()
                 .build();
         // [END configure_signin]
@@ -94,9 +94,9 @@ public class GoogleLoginActivity extends AppCompatActivity implements
         // [START on_start_sign_in]
         // Check for existing Google Sign In account, if the user is already signed in
         // the GoogleSignInAccount will be non-null.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        //GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        updateUI(currentUser);
+        FirebaseUser account = mAuth.getCurrentUser();
+//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        updateUI(account);
         // [END on_start_sign_in]
     }
 
@@ -106,12 +106,13 @@ public class GoogleLoginActivity extends AppCompatActivity implements
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+//                handleSignInResult(task);
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(LOG_TAG, "Google sign in failed", e);
                 // [START_EXCLUDE]
@@ -121,7 +122,6 @@ public class GoogleLoginActivity extends AppCompatActivity implements
         }
     }
 
-    // [START auth_with_google]
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Log.d(LOG_TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
@@ -145,9 +145,8 @@ public class GoogleLoginActivity extends AppCompatActivity implements
                     }
                 });
     }
-    // [END auth_with_google]
 
-//    // [START handleSignInResult]
+    // [START handleSignInResult]
 //    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
 //        try {
 //            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
@@ -160,7 +159,7 @@ public class GoogleLoginActivity extends AppCompatActivity implements
 //            updateUI(null);
 //        }
 //    }
-//    // [END handleSignInResult]
+    // [END handleSignInResult]
 
     // [START signIn]
     private void signIn() {
@@ -224,6 +223,34 @@ public class GoogleLoginActivity extends AppCompatActivity implements
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
         }
     }
+
+//    private void updateUI(@Nullable GoogleSignInAccount account) {
+//        if (account != null) {
+//            String personId = null;
+//            GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(getApplicationContext());
+//            if (acct != null) {
+//                personId = acct.getId();
+//            }
+//
+//            String personName = account.getDisplayName();
+//            String personEmail = account.getEmail();
+//            String personPhoto = account.getPhotoUrl().toString();
+//
+//            SharedPreferences.Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(GoogleLoginActivity.this).edit();
+//            prefEditor.putString("USERNAME", personName);
+//            prefEditor.putString("EMAIL", personEmail);
+//            prefEditor.putString("ID", "us-east-1:" + personId);
+//            prefEditor.putString("PROFILE_PICTURE", personPhoto);
+//            prefEditor.apply();
+//
+//            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+//            Intent mainIntent = new Intent(GoogleLoginActivity.this, MainActivity.class);
+//            GoogleLoginActivity.this.startActivity(mainIntent);
+//            GoogleLoginActivity.this.finish();
+//        } else {
+//            findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
+//        }
+//    }
 
     @Override
     public void onClick(View v) {
