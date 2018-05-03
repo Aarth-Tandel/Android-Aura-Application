@@ -91,6 +91,7 @@ public class DeviceDbOperation {
                 value.put(DeviceContract.DeviceEntry.THING_NAME, x.getThing());
                 value.put(DeviceContract.DeviceEntry.DEVICE_NAME, x.getName());
                 value.put(DeviceContract.DeviceEntry.ACCESS, x.getMaster());
+                value.put(DeviceContract.DeviceEntry.LOAD, Constant.DEFAULT_LOAD);
                 if (x.getMaster().equals(Constant.IDENTITY_ID))
                     value.put(DeviceContract.DeviceEntry.HOME_NAME, x.getHome());
                 else

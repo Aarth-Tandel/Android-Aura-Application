@@ -28,6 +28,24 @@ public class Constant {
     public static final String NETWORK_SSID = "Aura";
     public static final String URL = "http://192.168.10.1/";
     public static final int MAX_HOME = 5;
+    public static String DEFAULT_LOAD = "{" +
+            "  \"load_1\": {" +
+            "    \"name\": \"LED\"," +
+            "    \"dimmable\": true" +
+            "  },\n" +
+            "  \"load_2\": {" +
+            "    \"name\": \"Lamp\"," +
+            "    \"dimmable\": true" +
+            "  }," +
+            "  \"load_3\": {" +
+            "    \"name\": \"Table Light\"," +
+            "    \"dimmable\": true" +
+            "  }," +
+            "  \"load_4\": {" +
+            "    \"name\": \"Switch\"," +
+            "    \"dimmable\": false" +
+            "  }" +
+            "}";
 
     //SQL - Lite Queries for Device DB
     public static final String GET_ALL_SHARED_DEVICES_FOR_HOME = "select " + DeviceContract.DeviceEntry.DEVICE_NAME + ", " + DeviceContract.DeviceEntry.ACCESS + ", " + DeviceContract.DeviceEntry.UIUD + " from " + DeviceContract.DeviceEntry.TABLE_NAME + " where " + DeviceContract.DeviceEntry.HOME_NAME + "=?";

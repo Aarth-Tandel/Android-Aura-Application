@@ -94,6 +94,7 @@ public class DeviceUtils {
     }
 
     public void UpdateSwitchStatesFromShadow(AwsState shadow, String thing, String device) {
+
         for (AuraSwitch c : AuraFourNodeDevice) {
             if (device.equals(c.getName())) {
                 c.setStates(shadow.getStates());

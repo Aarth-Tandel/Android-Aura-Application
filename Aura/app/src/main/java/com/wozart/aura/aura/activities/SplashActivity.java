@@ -42,7 +42,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SplashActivity.class.getSimpleName();
 
-    private final int SPLASH_DISPLAY_LENGTH = 2000;
+    private final int SPLASH_DISPLAY_LENGTH = 3000;
     public static PinpointManager pinpointManager;
 
     @Override

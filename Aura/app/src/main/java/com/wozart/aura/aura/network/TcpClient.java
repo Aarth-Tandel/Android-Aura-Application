@@ -105,7 +105,7 @@ public class TcpClient {
                 mBufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // send login name
                 sendMessage(encryptedData);
-                Log.i("TCP Cleint","TCP TX Data : " + encryptedData);
+                Log.i("TCP Cleint","TCP TX Data : " + data);
                 //in this while the client listens for the messages sent by the server
                 int count = 0;
                 boolean messageFlag = false;

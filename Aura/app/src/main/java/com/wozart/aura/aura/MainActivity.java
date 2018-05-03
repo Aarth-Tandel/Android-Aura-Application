@@ -138,7 +138,6 @@ public class MainActivity extends AppCompatActivity
         DeviceDbHelper dbHelper = new DeviceDbHelper(this);
         mDb = dbHelper.getWritableDatabase();
         db.InsertBasicData(mDb);
-        db.getAll(mDb);
 
         initializeTabs();
         initializeFab();

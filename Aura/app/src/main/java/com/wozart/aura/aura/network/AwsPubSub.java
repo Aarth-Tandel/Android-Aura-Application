@@ -87,7 +87,15 @@ public class AwsPubSub extends Service {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String id = prefs.getString("ID", "NO_USER");
-        clientId = UUID.randomUUID().toString();
+        String client_id = prefs.getString("CLIENT_ID", "NULL");
+
+        if(client_id.equals("NULL")){
+            SharedPreferences.Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            prefEditor.putString("CLIENT_ID", UUID.randomUUID().toString());
+            prefEditor.apply();
+        }
+
+        clientId = client_id;
 
         // Initialize the AWS Cognito credentials provider
         credentialsProvider = new CognitoCachingCredentialsProvider(

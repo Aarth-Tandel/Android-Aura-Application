@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "719146577619-ijnmfpeh6dlmtogvcej1pqjleo2c88oa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wozart.aura",
+            "certificate_hash": "790496aed21416cd1eb53bb6ae146aa786ddf0b8"
+          }
+        },
+        {
+          "client_id": "719146577619-6pjk9hlba9nkn9vo9m9p79edt97vdi5q.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "719146577619-h04p0ahak0halqdc0p48cdl1c0fkumh7.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "719146577619-q3iockntkc7sb2seajuhk2f17ghec3cf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -40,7 +56,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "719146577619-0b6307lbg7gukgmg2mjl4ti4gmpb6f0p.apps.googleusercontent.com",
+              "client_id": "719146577619-6pjk9hlba9nkn9vo9m9p79edt97vdi5q.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -25,13 +25,18 @@ public class JsonUtils {
     public static AwsState DeserializeAwsData(String Data) {
         Gson gson = new Gson();
         AwsDataModel dataRD = new AwsDataModel();
-
         try {
             dataRD = gson.fromJson(Data, AwsDataModel.class);
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error Parsing Json Data: " + e);
         }
-        return dataRD.state.reported;
+
+        AwsState receivedData = new AwsState();
+        receivedData = dataRD.state.reported;
+
+//        if(dataRD.state.reported == null) return null;
+
+        return receivedData;
     }
 
     public String AwsRegionThing(String region, String thing) {
@@ -90,7 +95,7 @@ public class JsonUtils {
         int plc[] = new int[4];
         plc[position] = 1;
 
-        String data = "{\"type\":4, \"ip\":" + convertIP() + ",\"name\":\"" + name + "\",\"uiud\":\""+ uiud +"\",\"state\":[" + states[0] + "," + states[1] + "," + states[2] + "," + states[3] + "],\"dim\":["
+        String data = "{\"type\":4, \"ip\":" + convertIP() + ",\"name\":\"" + name + "\",\"uiud\":\"" + uiud + "\",\"state\":[" + states[0] + "," + states[1] + "," + states[2] + "," + states[3] + "],\"dim\":["
                 + dims[0] + "," + dims[1] + "," + dims[2] + "," + dims[3] + "], \"plc\":[" + plc[0] + "," + plc[1] + "," + plc[2] + "," + plc[3] + "]}";
         return data;
     }
@@ -98,17 +103,16 @@ public class JsonUtils {
     public static String SerializeDataToAws(AuraSwitch device) {
         String data;
         int[] states = device.getStates();
-        int led = device.getLed();
-        if (led == 1) led = 0;
-        else led = 1;
-        data = "{\"state\":{\"desired\": {\"led\": " + led + ", \"dim\": [100, 100, 100, 100],\"state\": [" + states[0] + ", " + states[1] + ", " + states[2] + "," +
-                states[3] + "]}}}";
+        int led = (int) System.currentTimeMillis();
+        //data = "{\"state\":{\"desired\": {\"led\": " + (led / 1000)+", \"dim\": {\"d0\":" + 100 + ",\"d1\":" + 100 + ",\"d2\":" + 100 + ",\"d3\":" + 100 + "}}}}";
+        data = "{\"state\":{\"desired\": {\"led\": " + (led / 1000) + ", \"dim\": {\"d0\":" + 100 + ",\"d1\":" + 100 + ",\"d2\":" + 100 + ",\"d3\":" + 100 + "},\"state\": {\"s0\":" + states[0] + ",\"s1\": " + states[1] + ",\"s2\":  " + states[2] + ",\"s3\": " +
+                states[3] + "}}}}";
         return data;
     }
 
     public String InitialData(String uiud) throws UnknownHostException {
 
-        String data = "{\"type\":1,\"ip\":" + convertIP() + ",\"time\":" + (System.currentTimeMillis() / 1000) + ",\"uiud\":\""+ uiud +"\" }";
+        String data = "{\"type\":1,\"ip\":" + convertIP() + ",\"time\":" + (System.currentTimeMillis() / 1000) + ",\"uiud\":\"" + uiud + "\" }";
         return data;
     }
 
