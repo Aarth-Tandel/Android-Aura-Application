@@ -12,7 +12,7 @@ public class AuraSwitchLoad {
 
     private static String INITIAL_LOAD = "{" +
             "  \"load_1\": {" +
-            "    \"name\": \"Light\"," +
+            "    \"name\": \"LED\"," +
             "    \"dimmable\": true" +
             "  },\n" +
             "  \"load_2\": {" +
@@ -20,7 +20,7 @@ public class AuraSwitchLoad {
             "    \"dimmable\": true" +
             "  }," +
             "  \"load_3\": {" +
-            "    \"name\": \"Bulb\"," +
+            "    \"name\": \"Table Light\"," +
             "    \"dimmable\": true" +
             "  }," +
             "  \"load_4\": {" +

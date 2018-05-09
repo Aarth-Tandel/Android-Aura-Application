@@ -10,6 +10,8 @@ import com.wozart.aura.aura.model.Aws.AwsDataModel;
 import com.wozart.aura.aura.model.Aws.AwsState;
 import com.google.gson.Gson;
 
+import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
@@ -24,17 +26,17 @@ public class JsonUtils {
 
     public static AwsState DeserializeAwsData(String Data) {
         Gson gson = new Gson();
-        AwsDataModel dataRD = new AwsDataModel();
+        AwsState receivedData = new AwsState();
+        //AwsDataModel dataRD = new AwsDataModel();
         try {
-            dataRD = gson.fromJson(Data, AwsDataModel.class);
+            JSONObject reported = new JSONObject(Data);
+            receivedData = gson.fromJson(reported.getJSONObject("state").getString("reported"), AwsState.class);
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error Parsing Json Data: " + e);
         }
 
-        AwsState receivedData = new AwsState();
-        receivedData = dataRD.state.reported;
 
-//        if(dataRD.state.reported == null) return null;
+        //receivedData = dataRD.state.reported;
 
         return receivedData;
     }

@@ -1,5 +1,6 @@
 package com.wozart.aura.aura.activities.customization;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.nsd.NsdServiceInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -201,9 +204,8 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                         thing = sqlOperationThingTable.searchAvailableDevices();
                     }
                     sendCertificate(device.getDevice(), thing);
-                    Thread.sleep(1000);
                     sendKeys(device.getDevice(), thing);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -299,14 +301,15 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
         protected void onProgressUpdate(String... message) {
 
             if (message[0].equals(Constant.SERVER_NOT_REACHABLE)) {
-                if (mtoast != null)
-                    mtoast = null;
-                Context context = getApplicationContext();
-                CharSequence text = "Receiving packets";
-                int duration = Toast.LENGTH_SHORT;
-
-                mtoast = Toast.makeText(context, text, duration);
-                mtoast.show();
+                View rootView = ((Activity)mContext).getWindow().getDecorView().findViewById(android.R.id.content);
+                final Snackbar snackBar = Snackbar.make(rootView, "This process will take about 1 minute", Snackbar.LENGTH_INDEFINITE);
+                snackBar.setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        snackBar.dismiss();
+                    }
+                });
+                snackBar.show();
             } else {
                 String decryptedData = Encryption.denryptMessage(message[0]);
                 JsonUtils mJsonUtils = new JsonUtils();
@@ -314,7 +317,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                 Log.i(LOG_TAG, "Received Data: " + decryptedData);
                 switch (dummyDevice.getType()) {
                     case 1:
-                        if (dummyDevice.getUiud().equals(DeviceDbOperation.getUiud(mDb, dummyDevice.getName())) && dummyDevice.getAWSConfiguration() == 1) {
+                        if (dummyDevice.getAWSConfiguration() == 1) {
                             for (NsdServiceInfo x : nsdClient.GetAllServices()) {
                                 //Find the match in services found and data received
                                 if (x.getServiceName().contains(dummyDevice.getName())) {
@@ -336,12 +339,18 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                                     sqlOperationThingTable.updateAvailability(dummyDevice.getThing());
                                 }
                             }).start();
-                            DeviceDbOperation deviceDbOperation = new DeviceDbOperation();
-                            deviceDbOperation.updateThing(mDb, dummyDevice.getName(), dummyDevice.getThing());
-                            Toast.makeText(mContext, "Synced with AWS", Toast.LENGTH_SHORT).show();
-//                            if (mContext instanceof CustomizationActivity) {
-//                                ((CustomizationActivity) mContext).connectToAws(dummyDevice.getThing());
-//                            }
+                            AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
+                            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.MATCH_PARENT);
+                            alert.setMessage("Aura Switch " + dummyDevice.getName() + " connected to cloud successfully");
+                            alert.setTitle("Successfully Synced");
+                            alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+                            alert.show();
                             return;
                         }
 
@@ -360,7 +369,7 @@ public class CustomizationDeviceAdapter extends RecyclerView.Adapter<Customizati
                             if (mtoast != null)
                                 mtoast = null;
                             Context context = getApplicationContext();
-                            CharSequence text = "Competed Percentage: " + packetCount * 2 + "%";
+                            CharSequence text = "Completed Percentage: " + packetCount * 2 + "%";
                             int duration = Toast.LENGTH_SHORT;
 
                             mtoast = Toast.makeText(context, text, duration);

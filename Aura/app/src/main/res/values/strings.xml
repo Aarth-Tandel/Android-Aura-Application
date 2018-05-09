@@ -35,6 +35,7 @@
     <string name="id_token_fmt">ID Token: %s</string>
     <string name="server_client_id">929748901585-1oqsgea13j23aq9h3oar7g6lgs2ke20f.apps.googleusercontent.com</string>
 
-
+    <string name="com_auth0_client_id">wpZCp0VAU2yxeiSkD3tJiPRDHDnXUX6d</string>
+    <string name="com_auth0_domain">wozart.auth0.com</string>
 
 </resources>

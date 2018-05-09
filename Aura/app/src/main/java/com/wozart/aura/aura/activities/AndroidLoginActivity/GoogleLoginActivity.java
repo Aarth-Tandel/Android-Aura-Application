@@ -1,5 +1,6 @@
 package com.wozart.aura.aura.activities.AndroidLoginActivity;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -14,8 +15,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.auth0.android.Auth0;
+import com.auth0.android.authentication.AuthenticationException;
+import com.auth0.android.provider.AuthCallback;
+import com.auth0.android.provider.WebAuthProvider;
+import com.auth0.android.result.Credentials;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -36,8 +44,17 @@ import com.wozart.aura.R;
 import com.wozart.aura.aura.MainActivity;
 import com.wozart.aura.aura.utilities.Constant;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Activity to demonstrate basic retrieval of the Google user's ID, email address, and basic
@@ -52,11 +69,17 @@ public class GoogleLoginActivity extends AppCompatActivity implements
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
 
+    private Auth0 auth0;
+    private OkHttpClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_login);
+
+         //button listnere for login with email
+        Button loginButton = (Button) findViewById(R.id.loginButton);
+        findViewById(R.id.loginButton).setOnClickListener(this);
 
 
         // Button listeners
@@ -85,6 +108,10 @@ public class GoogleLoginActivity extends AppCompatActivity implements
         // [END customize_button]
 
         mAuth = FirebaseAuth.getInstance();
+
+        auth0 = new Auth0(this);
+        auth0.setOIDCConformant(true);
+        client = new OkHttpClient();
     }
 
     @Override
@@ -223,6 +250,37 @@ public class GoogleLoginActivity extends AppCompatActivity implements
             findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
         }
     }
+    private void updateUIIndipendent(String account) {
+        Log.d("LOGIN","Login account: "+account);
+        try{
+            JSONObject user=new JSONObject(account);
+            String personName = user.getString("nickname");
+            String personEmail = user.getString("email");
+            String personPhoto = user.getString("picture");
+            String personId_string = user.getString("sub");
+            int splitIndex = personId_string.indexOf("|");
+            String personId  = personId_string.substring(splitIndex+1);
+
+
+            SharedPreferences.Editor prefEditor = PreferenceManager.getDefaultSharedPreferences(GoogleLoginActivity.this).edit();
+            prefEditor.putString("USERNAME", personName);
+            prefEditor.putString("EMAIL", personEmail);
+            prefEditor.putString("ID", "us-east-1:" + personId);
+            prefEditor.putString("PROFILE_PICTURE", personPhoto);
+            prefEditor.apply();
+
+            findViewById(R.id.sign_in_button).setVisibility(View.GONE);
+            findViewById(R.id.loginButton).setVisibility(View.GONE);
+            Intent mainIntent = new Intent(GoogleLoginActivity.this, MainActivity.class);
+            GoogleLoginActivity.this.startActivity(mainIntent);
+            GoogleLoginActivity.this.finish();
+
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 //    private void updateUI(@Nullable GoogleSignInAccount account) {
 //        if (account != null) {
@@ -252,15 +310,84 @@ public class GoogleLoginActivity extends AppCompatActivity implements
 //        }
 //    }
 
+    private void loginWithEmail() {
+        WebAuthProvider.init(auth0)
+                .withScheme("demo")
+                .withAudience(String.format("https://%s/userinfo", getString(R.string.com_auth0_domain)))
+                .withScope("openid offline_access profile email")
+                .start(GoogleLoginActivity.this, new AuthCallback() {
+                    @Override
+                    public void onFailure(@NonNull Dialog dialog) {
+                        // Show error Dialog to user
+                    }
+
+                    @Override
+                    public void onFailure(final AuthenticationException exception) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.e("ERROR :", "Error " + exception);
+                                Toast.makeText(GoogleLoginActivity.this, "Error: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onSuccess(final Credentials credentials) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //token.setText("Logged in: " + credentials.getAccessToken());
+                                getWebservice((credentials.getAccessToken()));
+
+                            }
+                        });
+                    }
+                });
+    }
+    private void getWebservice(String tokens) {
+        final Request request = new Request.Builder().url("https://wozart.auth0.com/userinfo")
+                .addHeader("authorization", "Bearer " + tokens)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //token.setText("Failure !");
+                    }
+                });
+            }
+            @Override
+            public void onResponse(Call call, final Response response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Log.d("LOGIN","Login : "+response.body().string());
+                            //JSONObject user=new JSONObject(response.body().string());
+                            //Log.d("LOGIN","Login String : "+user.getString("email"));
+                            updateUIIndipendent(response.body().string());
+                        } catch (IOException ioe) {
+                            //token.setText("Error during get body");
+                            Log.d("LOGIN","LOgin : "+"Error during get body");
+                        }
+                    }
+                });
+            }
+        });
+    }
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.sign_in_button:
                 signIn();
                 break;
-//            case R.id.sign_out_button:
-//                signOut();
-//                break;
+            case R.id.loginButton:
+                loginWithEmail();
+               break;
 //            case R.id.disconnect_button:
 //                revokeAccess();
 //                break;

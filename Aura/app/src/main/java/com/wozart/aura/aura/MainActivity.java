@@ -599,12 +599,15 @@ public class MainActivity extends AppCompatActivity
             String segments[] = shadow.split("/");
             if (shadow.equals("Connected")) {
                 final ArrayList<String> things = db.GetThingName(mDb);
-                for (String x : things) {
+                if (awsPubSub == null) {
                     try {
-                        awsPubSub.AwsGet(x);
-                        awsPubSub.AwsGetPublish(x);
-                        awsPubSub.AwsSubscribe(x);
                         Thread.sleep(1000);
+                        for (String x : things) {
+                            awsPubSub.AwsGet(x);
+                            awsPubSub.AwsGetPublish(x);
+                            awsPubSub.AwsSubscribe(x);
+                            Thread.sleep(1000);
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

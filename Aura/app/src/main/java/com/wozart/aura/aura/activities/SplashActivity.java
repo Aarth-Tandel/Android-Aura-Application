@@ -1,9 +1,11 @@
 package com.wozart.aura.aura.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -42,7 +44,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SplashActivity.class.getSimpleName();
 
-    private final int SPLASH_DISPLAY_LENGTH = 3000;
+    private final int SPLASH_DISPLAY_LENGTH = 2000;
     public static PinpointManager pinpointManager;
 
     @Override
@@ -114,7 +116,11 @@ public class SplashActivity extends AppCompatActivity {
     public boolean isLoggedIn() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         //AccessToken accessToken = AccessToken.getCurrentAccessToken();
-        return account != null;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SplashActivity.this);
+        final String userId = prefs.getString("ID", "NULL");
+        boolean flag = true;
+        if(userId.equals("NULL") && account == null ) flag = false;
+        return flag;
     }
 
     public boolean isInternetWorking() {

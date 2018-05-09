@@ -63,8 +63,18 @@ public class SqlOperationDeviceTable {
                     .build();
 
             String thing = null;
-            if (isDeviceAlreadyRegisteredToTheUser(deviceId)) {
-                thing = clearPreviousUserAndGetThing(deviceId);
+
+            DevicesTableDO checkDevice = new DevicesTableDO();
+            if (deviceId == null) return null;
+
+            checkDevice = dynamoDBMapper.load(DevicesTableDO.class, deviceId);
+            if (checkDevice != null) {
+                checkDevice.setMaster(null);
+                checkDevice.setSlave(null);
+                checkDevice.setLoads(null);
+                checkDevice.setUIUD(null);
+                dynamoDBMapper.save(checkDevice);
+                thing = checkDevice.getThing();
             }
             String device = deviceId.substring(deviceId.length() - 6);
 
@@ -94,66 +104,70 @@ public class SqlOperationDeviceTable {
         }
     }
 
-    private boolean isDeviceAlreadyRegisteredToTheUser(String device) {
+//    private boolean isDeviceAlreadyRegisteredToTheUser(String device) {
+//        try {
+//            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+//            this.dynamoDBMapper = DynamoDBMapper.builder()
+//                    .dynamoDBClient(dynamoDBClient)
+//                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+//                    .build();
+//            DevicesTableDO checkDevice = new DevicesTableDO();
+//            if (device == null)
+//                return false;
+//            checkDevice = dynamoDBMapper.load(DevicesTableDO.class, device);
+//            if (checkDevice == null)
+//                return false;
+//            else {
+//                return true;
+//            }
+//        } catch (Exception e) {
+//            Log.e(LOG_TAG, "Error : " + e);
+//            return false;
+//        }
+//    }
+//
+//    private String clearPreviousUserAndGetThing(String device) {
+//        try {
+//            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
+//            this.dynamoDBMapper = DynamoDBMapper.builder()
+//                    .dynamoDBClient(dynamoDBClient)
+//                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+//                    .build();
+//            DevicesTableDO checkDevice = new DevicesTableDO();
+//            if (device == null)
+//                return null;
+//            checkDevice = dynamoDBMapper.load(DevicesTableDO.class, device);
+//            if (checkDevice == null)
+//                return null;
+//            else {
+//                checkDevice.setMaster(null);
+//                checkDevice.setSlave(null);
+//                checkDevice.setLoads(null);
+//                checkDevice.setUIUD(null);
+//                dynamoDBMapper.save(checkDevice);
+//                return checkDevice.getThing();
+//            }
+//        } catch (Exception e) {
+//            Log.e(LOG_TAG, "Error : " + e);
+//            return null;
+//        }
+//    }
+
+    public void deleteDevice(String deviceId) {
         try {
             AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
             this.dynamoDBMapper = DynamoDBMapper.builder()
                     .dynamoDBClient(dynamoDBClient)
                     .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
                     .build();
-            DevicesTableDO checkDevice = new DevicesTableDO();
-            if (device == null)
-                return false;
-            checkDevice = dynamoDBMapper.load(DevicesTableDO.class, device);
-            if (checkDevice == null)
-                return false;
-            else {
-                return true;
-            }
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Error : " + e);
-            return false;
-        }
-    }
 
-    private String clearPreviousUserAndGetThing(String device) {
-        try {
-            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-            this.dynamoDBMapper = DynamoDBMapper.builder()
-                    .dynamoDBClient(dynamoDBClient)
-                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                    .build();
-            DevicesTableDO checkDevice = new DevicesTableDO();
-            if (device == null)
-                return null;
-            checkDevice = dynamoDBMapper.load(DevicesTableDO.class, device);
-            if (checkDevice == null)
-                return null;
-            else {
-                checkDevice.setMaster(null);
-                checkDevice.setSlave(null);
-                checkDevice.setLoads(null);
-                checkDevice.setUIUD(null);
-                dynamoDBMapper.save(checkDevice);
-                return checkDevice.getThing();
-            }
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Error : " + e);
-            return null;
-        }
-    }
-
-    public void deleteDevice(String device) {
-        try {
-            AmazonDynamoDBClient dynamoDBClient = new AmazonDynamoDBClient(AWSMobileClient.getInstance().getCredentialsProvider());
-            this.dynamoDBMapper = DynamoDBMapper.builder()
-                    .dynamoDBClient(dynamoDBClient)
-                    .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                    .build();
-
-            DevicesTableDO devicesTableDO = new DevicesTableDO();
-            devicesTableDO.setDeviceId(device);
-            dynamoDBMapper.delete(devicesTableDO);
+            DevicesTableDO devicesTableDO = dynamoDBMapper.load(DevicesTableDO.class, deviceId);
+            devicesTableDO.setHome(null);
+            devicesTableDO.setLoads(null);
+            devicesTableDO.setMaster(null);
+            devicesTableDO.setSlave(null);
+            devicesTableDO.setUIUD(null);
+            dynamoDBMapper.save(devicesTableDO);
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error : " + e);
         }
